@@ -992,6 +992,17 @@ function goto(n) {
 // ============================================================
 function compoundHTML(key) { return COMPOUNDS[key] ? COMPOUNDS[key].d : key; }
 function compoundJa(key)   { return COMPOUNDS[key] ? (COMPOUNDS[key].ja || key) : key; }
+// HTMLタグなしのプレーンテキスト化学式（option要素や aria-label 用）。下付き数字はUnicodeで表現
+function compoundPlain(key) {
+  if (!COMPOUNDS[key]) return key;
+  let s = COMPOUNDS[key].d;
+  // <span class="sub">2</span> のような下付き → Unicode 下付き数字
+  s = s.replace(/<span class="sub">(\d+)<\/span>/g, (m, digits) =>
+    digits.split('').map(d => '₀₁₂₃₄₅₆₇₈₉'[parseInt(d)]).join('')
+  );
+  s = s.replace(/<[^>]+>/g, ''); // 残りのタグを除去
+  return s;
+}
 function formulaHTML(coefA, acid, coefB, alkali, coefS, salt, coefW) {
   const part = (coef, key) => {
     const c = (coef > 1) ? coef : '';
@@ -1301,9 +1312,7 @@ function initStage1() {
       opt.value = i;
       const coefA = r.coefA > 1 ? r.coefA : '';
       const coefB = r.coefB > 1 ? r.coefB : '';
-      const acidName = COMPOUNDS[r.acid].d.replace(/<[^>]+>/g, '');
-      const alkaliName = COMPOUNDS[r.alkali].d.replace(/<[^>]+>/g, '');
-      opt.textContent = `${i+1}. ${coefA}${acidName} + ${coefB}${alkaliName}`;
+      opt.textContent = `${i+1}. ${coefA}${compoundPlain(r.acid)} + ${coefB}${compoundPlain(r.alkali)}`;
       sel.appendChild(opt);
     });
     sel.addEventListener('change', () => { st1.qIdx = parseInt(sel.value); resetStage1(); });
