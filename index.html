@@ -200,7 +200,7 @@ header.title .rank-badge {
 }
 .beaker {
   width: 220px;
-  height: 150px;
+  height: 130px;
   background: linear-gradient(180deg, #FCFAEC 30%, #F5F1DC 100%);
   border: 3px solid #BFAE85;
   border-radius: 0 0 22px 22px;
@@ -210,7 +210,53 @@ header.title .rank-badge {
 }
 .beaker.acid    { background: linear-gradient(180deg, #FFF8F0 30%, #FFEEE0 100%); border-color: var(--acid); }
 .beaker.alkali  { background: linear-gradient(180deg, #F0F8FF 30%, #E0EEFE 100%); border-color: var(--alkali); }
-.beaker.center  { width: 280px; height: 180px; background: linear-gradient(180deg, #FFF9E0 30%, #FFF4C2 100%); border-color: var(--gold); }
+.beaker.center  { width: 280px; height: 160px; background: linear-gradient(180deg, #FFF9E0 30%, #FFF4C2 100%); border-color: var(--gold); }
+
+/* STAGE 1 生成物エリア（水と塩が横並びで残る） */
+.products-wrap {
+  position: relative;
+  max-width: 460px;
+  margin: 6px auto 4px;
+}
+.products-wrap .product-tag {
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  background: #fff;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #8a7a60;
+  border: 1px solid #BFAE85;
+  border-radius: 999px;
+  z-index: 1;
+}
+.products-zone {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: linear-gradient(90deg, #FFFBF0 0%, #FFF4D6 50%, #FFFBF0 100%);
+  border: 2px dashed #BFAE85;
+  border-radius: 8px;
+  padding: 4px 16px;
+  flex-wrap: wrap;
+}
+.products-zone:empty::after {
+  content: '↓ H⁺ と OH⁻ をペアにすると、ここに水と塩ができる';
+  font-size: 11px;
+  color: #aa9a70;
+  font-style: italic;
+}
+.products-zone .ion {
+  position: relative !important;
+  left: auto !important;
+  top: auto !important;
+  display: inline-flex;
+  cursor: default;
+}
+.products-zone .ion:hover { transform: scale(1.05); }
 .beaker .label {
   position: absolute;
   top: -22px;
@@ -627,12 +673,9 @@ sub, sup { font-size: 0.72em; }
       </div>
     </div>
 
-    <div class="mixed-zone" id="st1-mixed" style="display:none;">
-      <div class="center-beaker-wrap">
-        <div class="beaker center" id="st1-center">
-          <span class="label">塩タイル</span>
-        </div>
-      </div>
+    <div class="products-wrap">
+      <span class="product-tag">🧪 生成物（水と塩）</span>
+      <div class="products-zone" id="st1-products"></div>
     </div>
 
     <div class="feedback" id="st1-feedback"></div>
@@ -1195,8 +1238,9 @@ function resetStage1() {
 
   clearBeakerIons('st1-acid');
   clearBeakerIons('st1-alkali');
-  clearBeakerIons('st1-center');
-  document.getElementById('st1-mixed').style.display = 'none';
+  // 生成物エリアもクリア（水と塩を消す）
+  const prod = document.getElementById('st1-products');
+  if (prod) prod.innerHTML = '';
   document.getElementById('st1-acid-label').innerHTML = (rx.coefA>1?rx.coefA:'') + compoundHTML(rx.acid);
   document.getElementById('st1-alkali-label').innerHTML = (rx.coefB>1?rx.coefB:'') + compoundHTML(rx.alkali);
   document.getElementById('st1-feedback').className = 'feedback';
@@ -1298,6 +1342,18 @@ function makeWaterPair(idA, idB) {
   a.el.classList.add('paired');
   b.el.classList.add('paired');
   st1.pairCount.water++;
+  // 生成物エリアに H₂O を残す
+  const water = document.createElement('div');
+  water.className = 'ion h2o';
+  water.innerHTML = 'H₂O';
+  water.style.opacity = '0';
+  water.style.transform = 'scale(0.5)';
+  document.getElementById('st1-products').appendChild(water);
+  setTimeout(() => {
+    water.style.transition = 'opacity 0.3s, transform 0.3s';
+    water.style.opacity = '1';
+    water.style.transform = 'scale(1)';
+  }, 30);
   showFb('st1-feedback', 'ok', `💧 水分子 ${st1.pairCount.water}個目！`,
     `H⁺ + OH⁻ → H₂O。あと水を${Math.max(0, st1.target.water - st1.pairCount.water)}個作ったら、残ったイオンで塩を作ろう。`);
   // 全水ペア完成判定
@@ -1310,41 +1366,35 @@ function makeWaterPair(idA, idB) {
 
 document.getElementById('st1-make-salt-btn').addEventListener('click', () => {
   if (st1.pairCount.water < st1.target.water) return;
-  // 残ったイオン全部を回収して塩タイル化
+  // 残ったイオンを回収（水は生成物エリアに残ったまま）
   const remaining = Object.values(st1.ions).filter(i => !i.consumed);
   if (remaining.length === 0) {
-    showFb('st1-feedback', 'ng', '⚠️ イオンが残っていません', '何かおかしい状態です。リセットして再挑戦してください。');
+    showFb('st1-feedback', 'ng', '⚠️ イオンが残っていません', 'リセットして再挑戦してください。');
     return;
   }
-  // 全部 consumed にして塩タイルを中央ビーカーに表示
-  document.getElementById('st1-mixed').style.display = 'flex';
   const rx = REACTIONS[st1.qIdx];
-  const centerBeaker = document.getElementById('st1-center');
   remaining.forEach(p => {
     p.consumed = true;
     flashAt(p.el);
     p.el.classList.add('paired');
   });
-  // 塩タイルを生成
+  // 塩タイルを生成物エリアに追加（H₂Oの隣に並ぶ）
+  const products = document.getElementById('st1-products');
   for (let s = 0; s < rx.coefS; s++) {
     setTimeout(() => {
       const salt = document.createElement('div');
       salt.className = rx.precip ? 'ion precip' : 'ion salt';
       salt.innerHTML = compoundHTML(rx.salt);
-      const col = s % 3;
-      const row = Math.floor(s / 3);
-      salt.style.left = (30 + col * 70) + 'px';
-      salt.style.top  = (50 + row * 50) + 'px';
       salt.style.opacity = '0';
       salt.style.transform = 'scale(0.5)';
-      centerBeaker.appendChild(salt);
+      products.appendChild(salt);
       setTimeout(() => {
         salt.style.transition = 'opacity 0.3s, transform 0.4s';
         salt.style.opacity = '1';
         salt.style.transform = 'scale(1)';
       }, 30);
       SFX.correct();
-    }, s * 300);
+    }, s * 250);
   }
   // 完成判定 + 反応式表示
   setTimeout(() => {
@@ -1358,12 +1408,8 @@ document.getElementById('st1-make-salt-btn').addEventListener('click', () => {
       formulaHTML(rx.coefA, rx.acid, rx.coefB, rx.alkali, rx.coefS, rx.salt, rx.coefW) +
       (rx.precip ? '<br>⚠️ <strong>BaSO₄ は白い沈殿</strong>として出てくる特別な塩！' : ''));
     SFX.fanfare();
-    // クリア判定: 9パターン全部終わってなくても問題ごとにクリア扱い
-    if (st1.qIdx === REACTIONS.length - 1 || true) {
-      // 1問でも完成したらクリア
-      markCleared(1);
-    }
-  }, rx.coefS * 300 + 200);
+    markCleared(1);
+  }, rx.coefS * 250 + 200);
 });
 
 document.getElementById('st1-reset-btn').addEventListener('click', resetStage1);
