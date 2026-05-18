@@ -1034,17 +1034,16 @@ function runDemoStep3() {
   const hps  = stage0.centerIons.filter(p => p.type === 'H+');
   const ohms = stage0.centerIons.filter(p => p.type === 'OH-');
   const pairCount = Math.min(hps.length, ohms.length);
-  // H₂O を中央ビーカーの上半分にきれいに並べる位置を計算（塩タイルと重ならない）
-  const waterCols = Math.min(3, Math.max(1, pairCount));
-  const waterPadX = 30;
-  const waterUsableW = center.clientWidth - waterPadX*2 - 36;
-  const waterRowH = 42;
+  // H₂O はビーカーの左半分に横並びで配置（塩は右半分に置く想定）
+  const cw = center.clientWidth;
+  const leftPad = 18;
+  const halfW = cw / 2 - leftPad - 8;
   function waterPos(i) {
-    const col = i % waterCols;
-    const row = Math.floor(i / waterCols);
-    const x = waterPadX + (waterCols > 1 ? (waterUsableW / (waterCols-1)) * col : waterUsableW/2);
-    const y = 20 + row * waterRowH;
-    return { x, y };
+    const total = pairCount;
+    let x;
+    if (total === 1)      x = leftPad + halfW/2 - 18;
+    else                  x = leftPad + (halfW / (total - 1)) * i - 18;
+    return { x: Math.max(leftPad, x), y: 70 };
   }
   stage0.waters = [];
   for (let i = 0; i < pairCount; i++) {
@@ -1094,26 +1093,28 @@ function runDemoStep4() {
     p.el.style.opacity = '0';
     p.el.style.transform = 'scale(0.5)';
   });
-  // 塩タイルは下半分に並べる
+  // 塩タイルは右半分に横並びで配置（H₂Oは左半分に残る）
   const saltCount = rx.coefS;
-  const saltCols = Math.min(3, Math.max(1, saltCount));
-  const saltPadX = 24;
-  const saltUsableW = center.clientWidth - saltPadX*2 - 56;
-  const saltBaseY = center.clientHeight - 60; // 下から60px
+  const cw = center.clientWidth;
+  const rightPad = 14;
+  const rightStart = cw / 2 + 8;
+  const rightW = cw - rightStart - rightPad - 56;
+  function saltPosX(s) {
+    if (saltCount === 1) return rightStart + (rightW > 0 ? rightW/2 : 0);
+    return rightStart + (rightW > 0 ? (rightW / (saltCount - 1)) * s : 0);
+  }
   setTimeout(() => {
     for (let s = 0; s < saltCount; s++) {
       const salt = document.createElement('div');
       salt.className = rx.precip ? 'ion precip' : 'ion salt';
       salt.innerHTML = compoundHTML(rx.salt);
-      const col = s % saltCols;
-      const x = saltPadX + (saltCols > 1 ? (saltUsableW / (saltCols-1)) * col : saltUsableW/2);
-      salt.style.left = x + 'px';
-      salt.style.top  = saltBaseY + 'px';
+      salt.style.left = saltPosX(s) + 'px';
+      salt.style.top  = '70px';   // H₂Oと同じ高さで横並び
       salt.style.opacity = '0';
       salt.style.transform = 'scale(0.5)';
       center.appendChild(salt);
       setTimeout(() => {
-        salt.style.transition = 'opacity 0.3s, transform 0.4s, top 0.6s ease-in';
+        salt.style.transition = 'opacity 0.3s, transform 0.4s, top 0.7s ease-in';
         salt.style.opacity = '1';
         salt.style.transform = 'scale(1)';
       }, 30 + s * 120);
@@ -1121,7 +1122,7 @@ function runDemoStep4() {
       if (rx.precip) {
         setTimeout(() => {
           salt.style.top = (center.clientHeight - 44) + 'px';
-        }, 400 + s * 120);
+        }, 500 + s * 120);
       }
     }
     SFX.correct();
@@ -1129,7 +1130,7 @@ function runDemoStep4() {
       setTimeout(() => {
         document.getElementById('demo-precip').classList.add('show');
         document.getElementById('demo-precip-caption').classList.add('show');
-      }, 700);
+      }, 800);
     }
   }, 300);
   const remainingFormula = ionFormulaHTML(rx.acid, rx.coefA).split(' + ')[1] +
