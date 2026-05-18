@@ -195,9 +195,31 @@ header.title .rank-badge {
   display: flex;
   gap: 10px;
   justify-content: center;
+  align-items: flex-end;
   margin: 6px 0;
   flex-wrap: wrap;
 }
+/* 3ビーカー横並び（STAGE 0用） */
+.beaker-stage.three { align-items: center; }
+.beaker-stage.three .mix-arrow {
+  font-size: 22px;
+  color: #8C5A1A;
+  font-weight: 800;
+  align-self: center;
+  padding: 0 4px;
+}
+/* STAGE 1 の横並び：ビーカー2つ + 生成物 */
+.row-beakers-products {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 6px 0;
+}
+.row-beakers-products .beaker-stage { margin: 0; }
+.row-beakers-products .products-wrap { margin: 0; flex: 0 0 200px; max-width: 220px; }
+.row-beakers-products .products-zone { min-height: 110px; }
 .beaker {
   width: 220px;
   height: 130px;
@@ -618,24 +640,22 @@ sub, sup { font-size: 0.72em; }
       <span class="sdot" data-step="5">⑤反応式</span>
     </div>
 
-    <div class="beaker-stage" id="demo-stage">
+    <div class="beaker-stage three" id="demo-stage">
       <div class="beaker acid" id="demo-acid-beaker">
         <span class="label" id="demo-acid-label">HCl</span>
       </div>
+      <span class="mix-arrow" id="demo-arrow-left" style="opacity:0;">→</span>
+      <div class="beaker center" id="demo-center" style="opacity:0.35;">
+        <span class="label">混ぜたあと</span>
+        <div class="precip-pool" id="demo-precip"></div>
+      </div>
+      <span class="mix-arrow" id="demo-arrow-right" style="opacity:0;">←</span>
       <div class="beaker alkali" id="demo-alkali-beaker">
         <span class="label" id="demo-alkali-label">NaOH</span>
       </div>
     </div>
-
-    <div class="mixed-zone" id="demo-mixed" style="display:none;">
-      <div class="center-beaker-wrap">
-        <div class="beaker center" id="demo-center">
-          <span class="label">混ぜたあと</span>
-          <div class="precip-pool" id="demo-precip"></div>
-        </div>
-        <div class="precip-caption" id="demo-precip-caption">白い沈殿 (BaSO₄) が生じた！</div>
-      </div>
-    </div>
+    <div class="precip-caption" id="demo-precip-caption" style="text-align:center;max-width:280px;margin:2px auto 0;">白い沈殿 (BaSO₄) が生じた！</div>
+    <input type="hidden" id="demo-mixed">  <!-- 互換用ダミー -->
 
     <div class="formula-display" id="demo-formula" style="min-height: 40px;">
       <span class="step-label">▶ 観察スタートを押してね</span>
@@ -664,18 +684,20 @@ sub, sup { font-size: 0.72em; }
 
     <div class="formula-display" id="st1-formula"></div>
 
-    <div class="beaker-stage">
-      <div class="beaker acid" id="st1-acid">
-        <span class="label" id="st1-acid-label">HCl</span>
+    <div class="row-beakers-products">
+      <div class="beaker-stage">
+        <div class="beaker acid" id="st1-acid">
+          <span class="label" id="st1-acid-label">HCl</span>
+        </div>
+        <div class="beaker alkali" id="st1-alkali">
+          <span class="label" id="st1-alkali-label">NaOH</span>
+        </div>
       </div>
-      <div class="beaker alkali" id="st1-alkali">
-        <span class="label" id="st1-alkali-label">NaOH</span>
+      <span class="mix-arrow">→</span>
+      <div class="products-wrap">
+        <span class="product-tag">🧪 生成物</span>
+        <div class="products-zone" id="st1-products"></div>
       </div>
-    </div>
-
-    <div class="products-wrap">
-      <span class="product-tag">🧪 生成物（水と塩）</span>
-      <div class="products-zone" id="st1-products"></div>
     </div>
 
     <div class="feedback" id="st1-feedback"></div>
@@ -973,7 +995,9 @@ function initStage0() {
   clearBeakerIons('demo-acid-beaker');
   clearBeakerIons('demo-alkali-beaker');
   clearBeakerIons('demo-center');
-  document.getElementById('demo-mixed').style.display = 'none';
+  document.getElementById('demo-center').style.opacity = '0.35';
+  document.getElementById('demo-arrow-left').style.opacity = '0';
+  document.getElementById('demo-arrow-right').style.opacity = '0';
   document.getElementById('demo-precip').classList.remove('show');
   document.getElementById('demo-precip-caption').classList.remove('show');
   document.getElementById('demo-formula').innerHTML = '<span class="step-label">▶ 観察スタートを押してね</span>';
@@ -1042,8 +1066,14 @@ function runDemoStep2() {
   stage0.step = 2;
   updateStepGuide(2);
   const rx = stage0.rx;
-  document.getElementById('demo-mixed').style.display = 'flex';
+  // 中央ビーカーをはっきり表示、矢印を表示
   const centerBeaker = document.getElementById('demo-center');
+  centerBeaker.style.transition = 'opacity 0.4s';
+  centerBeaker.style.opacity = '1';
+  document.getElementById('demo-arrow-left').style.transition = 'opacity 0.4s';
+  document.getElementById('demo-arrow-left').style.opacity = '1';
+  document.getElementById('demo-arrow-right').style.transition = 'opacity 0.4s';
+  document.getElementById('demo-arrow-right').style.opacity = '1';
   clearBeakerIons('demo-center');
   stage0.centerIons = [];
   const acidIons = COMPOUNDS[rx.acid].ions;
