@@ -1115,11 +1115,11 @@ function runStage0Demo() {
 
   const acidBeaker = document.getElementById('demo-acid-beaker');
   const alkaliBeaker = document.getElementById('demo-alkali-beaker');
+  const centerBeaker = document.getElementById('demo-center');
 
   // PHASE 1: 電離（係数分のイオンをビーカーに置く）
   const acidIons = COMPOUNDS[acidKey].ions;
   const alkaliIons = COMPOUNDS[alkaliKey].ions;
-  // coefA 個の酸が電離 → 各イオン coefA × ions.n 個
   let acidIonList = [];
   acidIons.forEach(i => {
     for (let k = 0; k < rx.coefA * i.n; k++) acidIonList.push(i.type);
@@ -1131,45 +1131,207 @@ function runStage0Demo() {
   acidIonList.forEach((t, i) => placeIonInBeaker(acidBeaker, t, i, acidIonList.length));
   alkaliIonList.forEach((t, i) => placeIonInBeaker(alkaliBeaker, t, i, alkaliIonList.length));
 
-  // 反応式表示（段階的に）
   const formula = document.getElementById('demo-formula');
   formula.innerHTML =
-    '<span class="step-label">① 電離</span>' +
+    '<span class="step-label">① 電離（酸とアルカリがイオンに分かれる）</span>' +
     '<div class="line">' + (rx.coefA>1?rx.coefA:'') + compoundHTML(acidKey) + ' → ' + ionFormulaHTML(acidKey, rx.coefA) + '</div>' +
     '<div class="line">' + (rx.coefB>1?rx.coefB:'') + compoundHTML(alkaliKey) + ' → ' + ionFormulaHTML(alkaliKey, rx.coefB) + '</div>';
   SFX.pop();
 
-  // PHASE 2: 混ぜる
+  // PHASE 2a (0.8秒後): 中央ビーカーを表示。両方のイオンが中央に集まる
   stage0Anim.timer = setTimeout(() => {
     if (!stage0Anim.running) return;
     document.getElementById('demo-mixed').style.display = 'flex';
     SFX.pop();
-    formula.innerHTML +=
-      '<span class="step-label" style="margin-top:8px;">② 中和（H⁺ + OH⁻ → H₂O）</span>' +
-      '<div class="line">' + (rx.coefW>1?rx.coefW:'') + 'H⁺ + ' + (rx.coefW>1?rx.coefW:'') + 'OH⁻ → ' + (rx.coefW>1?rx.coefW:'') + 'H<span class="sub">2</span>O</div>';
+    // 中央ビーカーに全イオンを配置
+    const allIons = [...acidIonList, ...alkaliIonList];
+    const placedIons = [];
+    allIons.forEach((t, i) => {
+      const el = placeIonInBeaker(centerBeaker, t, i, allIons.length);
+      el.dataset.ionType = t;
+      el.style.opacity = '0';
+      el.style.transform = 'scale(0.3)';
+      setTimeout(() => {
+        el.style.transition = 'opacity 0.3s, transform 0.3s';
+        el.style.opacity = '1';
+        el.style.transform = 'scale(1)';
+      }, i * 40);
+      placedIons.push({ el, type: t });
+    });
 
-    // 沈殿パターン
-    if (rx.precip) {
-      stage0Anim.timer = setTimeout(() => {
-        if (!stage0Anim.running) return;
-        document.getElementById('demo-precip').classList.add('show');
-        document.getElementById('demo-precip-caption').classList.add('show');
-        SFX.fanfare();
-      }, 700);
-    }
-
-    // PHASE 3: 反応式全体
+    // PHASE 2b (混ぜた直後 + 0.7秒): H⁺+OH⁻ → H₂O アニメ
     stage0Anim.timer = setTimeout(() => {
       if (!stage0Anim.running) return;
       formula.innerHTML +=
-        '<span class="step-label" style="margin-top:8px;">③ 全体の反応式</span>' +
-        '<div class="line" style="font-size:1.2em;font-weight:800;color:#8C4A28;">' +
-          formulaHTML(rx.coefA, acidKey, rx.coefB, alkaliKey, rx.coefS, rx.salt, rx.coefW) +
-        '</div>';
-      SFX.correct();
-      markCleared(0);
-    }, 1500);
-  }, 1300);
+        '<span class="step-label" style="margin-top:8px;">② 中和（H⁺ + OH⁻ → H₂O）</span>' +
+        '<div class="line">' + (rx.coefW>1?rx.coefW:'') + 'H⁺ + ' + (rx.coefW>1?rx.coefW:'') + 'OH⁻ → ' + (rx.coefW>1?rx.coefW:'') + 'H<span class="sub">2</span>O</div>';
+
+      // H⁺ と OH⁻ をペアで光って消す
+      const hps  = placedIons.filter(p => p.type === 'H+');
+      const ohms = placedIons.filter(p => p.type === 'OH-');
+      const pairCount = Math.min(hps.length, ohms.length);
+      for (let i = 0; i < pairCount; i++) {
+        const hEl = hps[i].el;
+        const oEl = ohms[i].el;
+        setTimeout(() => {
+          if (!stage0Anim.running) return;
+          flashAt(hEl);
+          flashAt(oEl);
+          hEl.style.transition = 'opacity 0.3s, transform 0.3s';
+          oEl.style.transition = 'opacity 0.3s, transform 0.3s';
+          const hRect = hEl.getBoundingClientRect();
+          const oRect = oEl.getBoundingClientRect();
+          const cRect = centerBeaker.getBoundingClientRect();
+          const mx = ((hRect.left + oRect.left) / 2 - cRect.left + 18);
+          const my = ((hRect.top  + oRect.top ) / 2 - cRect.top  + 18);
+          hEl.style.opacity = '0';
+          oEl.style.opacity = '0';
+          hEl.style.transform = 'scale(0.5)';
+          oEl.style.transform = 'scale(0.5)';
+          setTimeout(() => {
+            if (!stage0Anim.running) return;
+            const water = document.createElement('div');
+            water.className = 'ion h2o';
+            water.innerHTML = 'H₂O';
+            water.style.left = (mx - 18) + 'px';
+            water.style.top  = (my - 18) + 'px';
+            water.style.opacity = '0';
+            water.style.transform = 'scale(0.5)';
+            centerBeaker.appendChild(water);
+            setTimeout(() => {
+              water.style.transition = 'opacity 0.3s, transform 0.3s';
+              water.style.opacity = '1';
+              water.style.transform = 'scale(1)';
+            }, 30);
+            SFX.pop();
+          }, 200);
+        }, 150 + i * 180);
+      }
+
+      // PHASE 2c: 塩を作る（残ったイオンを組み合わせる）
+      const reactionDuration = 150 + pairCount * 180 + 400;
+      stage0Anim.timer = setTimeout(() => {
+        if (!stage0Anim.running) return;
+        formula.innerHTML +=
+          '<span class="step-label" style="margin-top:8px;">③ 残ったイオンで塩ができる</span>' +
+          '<div class="line">' +
+            (rx.coefS>1?rx.coefS:'') + ionFormulaHTML(acidKey, rx.coefA).split(' + ')[1] +
+            ' + ' +
+            (rx.coefS>1?rx.coefS:'') + ionFormulaHTML(alkaliKey, rx.coefB).split(' + ')[0] +
+            ' → ' + (rx.coefS>1?rx.coefS:'') + compoundHTML(rx.salt) +
+            (rx.precip ? '<span style="color:#888;font-size:0.85em;"> ↓（白沈殿）</span>' : '') +
+          '</div>';
+
+        // 残った陽イオン + 陰イオンを塩タイルに変換
+        const remaining = placedIons.filter(p => p.type !== 'H+' && p.type !== 'OH-');
+        // 陽/陰のグループ化
+        const cations = remaining.filter(p => isCationType(p.type));
+        const anions  = remaining.filter(p => isAnionType(p.type));
+        // 塩1つあたり、cation の n と anion の n を組み合わせる
+        const saltAtoms = COMPOUNDS[rx.salt].atoms;
+        // 塩の表示: 各塩を1個の "塩タイル" にまとめる
+        const saltCount = rx.coefS;
+        for (let s = 0; s < saltCount; s++) {
+          setTimeout(() => {
+            if (!stage0Anim.running) return;
+            const cationsHere = cations.splice(0, cationCountInSalt(rx.salt));
+            const anionsHere  = anions.splice(0, anionCountInSalt(rx.salt));
+            const allHere = [...cationsHere, ...anionsHere];
+            if (allHere.length === 0) return;
+            const cRect = centerBeaker.getBoundingClientRect();
+            let avgX = 0, avgY = 0;
+            allHere.forEach(p => {
+              const r = p.el.getBoundingClientRect();
+              avgX += r.left - cRect.left + 18;
+              avgY += r.top  - cRect.top  + 18;
+            });
+            avgX /= allHere.length;
+            avgY /= allHere.length;
+            allHere.forEach(p => {
+              flashAt(p.el);
+              p.el.style.transition = 'opacity 0.3s, transform 0.3s';
+              p.el.style.opacity = '0';
+              p.el.style.transform = 'scale(0.5)';
+            });
+            setTimeout(() => {
+              if (!stage0Anim.running) return;
+              const salt = document.createElement('div');
+              salt.className = rx.precip ? 'ion precip' : 'ion salt';
+              salt.innerHTML = compoundHTML(rx.salt).replace(/<[^>]+>/g, m => m);
+              salt.style.width = '54px'; salt.style.height = '40px'; salt.style.borderRadius = '12px';
+              salt.style.fontSize = '11px';
+              salt.style.left = (avgX - 27) + 'px';
+              salt.style.top  = (avgY - 20) + 'px';
+              salt.style.opacity = '0';
+              salt.style.transform = 'scale(0.5)';
+              salt.dataset.precip = rx.precip ? '1' : '0';
+              centerBeaker.appendChild(salt);
+              setTimeout(() => {
+                salt.style.transition = 'opacity 0.3s, transform 0.4s';
+                salt.style.opacity = '1';
+                salt.style.transform = 'scale(1)';
+              }, 30);
+              SFX.correct();
+              if (rx.precip) {
+                setTimeout(() => {
+                  if (!stage0Anim.running) return;
+                  salt.style.transition = 'top 0.7s ease-in';
+                  salt.style.top = (centerBeaker.clientHeight - 42) + 'px';
+                }, 300);
+              }
+            }, 200);
+          }, s * 450);
+        }
+
+        // PHASE 2d: 沈殿表示
+        if (rx.precip) {
+          setTimeout(() => {
+            if (!stage0Anim.running) return;
+            document.getElementById('demo-precip').classList.add('show');
+            document.getElementById('demo-precip-caption').classList.add('show');
+            SFX.fanfare();
+          }, 450 * saltCount + 500);
+        }
+
+        // PHASE 3: 全体の反応式
+        stage0Anim.timer = setTimeout(() => {
+          if (!stage0Anim.running) return;
+          formula.innerHTML +=
+            '<span class="step-label" style="margin-top:8px;">④ 全体の反応式</span>' +
+            '<div class="line" style="font-size:1.2em;font-weight:800;color:#8C4A28;">' +
+              formulaHTML(rx.coefA, acidKey, rx.coefB, alkaliKey, rx.coefS, rx.salt, rx.coefW) +
+            '</div>';
+          SFX.correct();
+          markCleared(0);
+        }, 450 * saltCount + 900);
+      }, reactionDuration);
+    }, 700);
+  }, 800);
+}
+
+// 塩に含まれる陽イオン数（NaCl=1, BaCl2=1, Na2SO4=2 など）
+function cationCountInSalt(saltKey) {
+  const a = COMPOUNDS[saltKey].atoms;
+  if (a.Na) return a.Na;
+  if (a.Ba) return a.Ba;
+  if (a.Ca) return a.Ca;
+  return 1;
+}
+function anionCountInSalt(saltKey) {
+  const a = COMPOUNDS[saltKey].atoms;
+  if (a.Cl) return a.Cl;
+  if (a.S)  return a.S;  // SO4 は 1個
+  if (a.N)  return a.N;  // NO3 の N 数 = NO3 の個数
+  return 1;
+}
+function isCationType(t) { return ['H+','Na+','Ba2+','Ca2+'].includes(t); }
+function isAnionType(t)  { return ['OH-','Cl-','NO3-','SO42-'].includes(t); }
+function flashAt(el) {
+  const rect = el.getBoundingClientRect();
+  const flash = document.createElement('div');
+  flash.style.cssText = `position:fixed;left:${rect.left + rect.width/2 - 24}px;top:${rect.top + rect.height/2 - 24}px;width:48px;height:48px;border-radius:50%;background:radial-gradient(closest-side,#fff,#FFD700 50%,transparent);pointer-events:none;z-index:9999;animation:flash-anim 0.5s ease-out forwards;`;
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 600);
 }
 
 function ionFormulaHTML(compoundKey, coef) {
