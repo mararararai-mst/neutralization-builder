@@ -1389,8 +1389,20 @@ function makeWaterPair(idA, idB) {
   a.consumed = true; b.consumed = true;
   SFX.pop();
   flashAt(a.el); flashAt(b.el);
+  a.el.classList.remove('selected');
+  b.el.classList.remove('selected');
   a.el.classList.add('paired');
   b.el.classList.add('paired');
+  // inline style で確実に消す（電離時の inline opacity:1 を上書き）
+  a.el.style.opacity = '0';
+  a.el.style.pointerEvents = 'none';
+  b.el.style.opacity = '0';
+  b.el.style.pointerEvents = 'none';
+  // 0.4秒後に display:none で完全に DOM から見えなくする
+  setTimeout(() => {
+    if (a.el.classList.contains('paired')) a.el.style.display = 'none';
+    if (b.el.classList.contains('paired')) b.el.style.display = 'none';
+  }, 400);
   st1.pairCount.water++;
   // 生成物エリアに H₂O を残す
   const water = document.createElement('div');
@@ -1423,10 +1435,19 @@ document.getElementById('st1-make-salt-btn').addEventListener('click', () => {
     return;
   }
   const rx = REACTIONS[st1.qIdx];
+  // 選択中のイオンがあれば解除
+  if (st1.selected !== null && st1.ions[st1.selected]) {
+    st1.ions[st1.selected].el.classList.remove('selected');
+    st1.selected = null;
+  }
   remaining.forEach(p => {
     p.consumed = true;
     flashAt(p.el);
+    p.el.classList.remove('selected');
     p.el.classList.add('paired');
+    p.el.style.opacity = '0';
+    p.el.style.pointerEvents = 'none';
+    setTimeout(() => { p.el.style.display = 'none'; }, 400);
   });
   // 塩タイルを生成物エリアに追加（H₂Oの隣に並ぶ）
   const products = document.getElementById('st1-products');
