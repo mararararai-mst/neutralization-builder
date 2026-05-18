@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中和反応式ビルダー｜中3理科 酸・アルカリと中和</title>
+<meta property="og:title" content="中和反応式ビルダー｜中3理科">
+<meta property="og:description" content="3酸×3アルカリ＝9パターンの中和反応式を体験で組み立てる。ドラッグでH⁺×OH⁻→H₂O、係数±UI、空欄埋め、ファイナルランダム5問の階段構造。BaSO₄白沈殿アニメ付き。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://mararararai-mst.github.io/neutralization-builder/">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⚗️%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&family=Kaisei+Decol:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAF6E8;
+  --paper: #FFFBF0;
+  --ink: #3A3530;
+  --accent: #D97A4B;
+  --accent2: #4A7BAA;
+  --acid:   #E07A6A;    /* H+ 赤 */
+  --alkali: #5FA8D8;    /* OH- 青 */
+  --water:  #A6D8E8;    /* H2O 水色 */
+  --ion-h:  #E07A6A;
+  --ion-oh: #5FA8D8;
+  --ion-na: #E8A040;
+  --ion-cl: #6FB89A;
+  --ion-ba: #9D4EDD;
+  --ion-ca: #A4C639;
+  --ion-no3:#E895B0;
+  --ion-so4:#F77F00;
+  --pink:   #FFE3EC;
+  --mint:   #D8F3DC;
+  --cream:  #FFF6E6;
+  --peach:  #FFE9D6;
+  --lilac:  #ECE7F5;
+  --grid: rgba(180, 160, 120, 0.12);
+  --gold: #E8A040;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'M PLUS Rounded 1c', system-ui, sans-serif;
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 24px 24px;
+  min-height: 100vh;
+}
+.wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 6px 20px 12px;
+}
+header.title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 6px;
+  border-bottom: 2px dashed var(--accent);
+  padding-bottom: 4px;
+  flex-wrap: wrap;
+}
+header.title h1 {
+  font-size: 19px;
+  margin: 0;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+header.title .sub {
+  font-size: 13px;
+  color: #8a7a60;
+  font-family: 'Kaisei Decol', serif;
+}
+header.title .rank-badge {
+  margin-left: auto;
+  background: linear-gradient(135deg, var(--gold), #F0C060);
+  color: #fff;
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 800;
+  box-shadow: 0 2px 6px rgba(232, 160, 64, 0.35);
+}
+
+/* 進捗ナビ（左から右へstageを並べる） */
+.progress-nav {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 0 8px;
+  flex-wrap: wrap;
+}
+.pdot {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  background: #fff;
+  border: 2px solid #d8c8a0;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #8a7a60;
+  transition: all 0.12s;
+}
+.pdot:hover { transform: translate(-1px, -1px); }
+.pdot.active { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 2px 6px rgba(217, 122, 75, 0.35); }
+.pdot.cleared { background: #B7E4C7; border-color: #2E7D32; color: #2E7D32; }
+.pdot.cleared.active { background: #2E7D32; color: #fff; }
+.pdot .stnum {
+  background: rgba(0,0,0,0.10);
+  border-radius: 999px;
+  padding: 0 6px;
+  font-size: 11px;
+}
+.pdot.active .stnum { background: rgba(255,255,255,0.30); }
+
+/* ステージ */
+.chapter {
+  display: none;
+  background: var(--paper);
+  border-radius: 14px;
+  padding: 10px 14px 12px;
+  box-shadow: 0 3px 12px rgba(120, 100, 80, 0.10);
+  border: 2px solid #EADFC4;
+  position: relative;
+}
+.chapter.active { display: block; }
+.chapter h2 {
+  margin: 0 0 6px 0;
+  font-size: 18px;
+  font-weight: 800;
+  color: #4a3a20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.chapter .lead {
+  font-size: 13px;
+  color: #6a5a40;
+  line-height: 1.7;
+  margin-bottom: 10px;
+}
+.chapter .lead .key {
+  background: #FFF4D6;
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-weight: 700;
+  color: #8C5A1A;
+}
+
+/* チャプター内ボックス */
+.box {
+  background: #FFFBF0;
+  border: 2px solid #EADFC4;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 8px 0;
+}
+.box.tight { padding: 6px 10px; }
+.box-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #6a5a40;
+  margin-bottom: 6px;
+  letter-spacing: 0.04em;
+}
+
+/* 共通ボタン */
+.btn {
+  background: #fff;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  color: var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+  transition: transform 0.08s, box-shadow 0.08s;
+}
+.btn:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--ink); }
+.btn:active { transform: translate(1px, 1px); box-shadow: 1px 1px 0 var(--ink); }
+.btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 2px 2px 0 #8C4A28; }
+.btn.primary:hover { box-shadow: 3px 3px 0 #8C4A28; }
+.btn.primary:active { box-shadow: 1px 1px 0 #8C4A28; }
+.btn.ghost { background: #FFF6E6; border-color: #BFAE85; color: #8C5A1A; box-shadow: 2px 2px 0 #BFAE85; }
+.btn.ghost:hover { box-shadow: 3px 3px 0 #BFAE85; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: 2px 2px 0 var(--ink); }
+.btn.sm { padding: 4px 10px; font-size: 12px; }
+
+.chapter-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+/* 物質タイル（係数±UI） */
+.formula-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-family: 'Kaisei Decol', serif;
+  font-size: 18px;
+  justify-content: center;
+  padding: 8px 0;
+}
+.compound-tile {
+  display: inline-flex;
+  align-items: center;
+  background: #fff;
+  border: 2px solid #BFAE85;
+  border-radius: 12px;
+  padding: 4px 6px;
+  gap: 4px;
+  position: relative;
+}
+.compound-tile .coef-btn {
+  background: #FFF4D6;
+  border: 1.5px solid #BFAE85;
+  border-radius: 8px;
+  width: 24px; height: 24px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  color: #8C5A1A;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.compound-tile .coef-btn:hover { background: #FFE9B8; }
+.compound-tile .coef-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.compound-tile .coef {
+  font-weight: 800;
+  min-width: 18px;
+  text-align: center;
+  font-size: 18px;
+  color: #4a3a20;
+}
+.compound-tile .compound-name {
+  padding: 0 6px;
+  font-family: 'Kaisei Decol', serif;
+  font-size: 17px;
+}
+.compound-tile .compound-name .sub { font-size: 0.7em; vertical-align: sub; }
+.compound-tile .compound-name .sup { font-size: 0.7em; vertical-align: super; }
+.compound-tile.acid    { background: linear-gradient(180deg, #FFF, #FFF0EC); border-color: var(--acid); }
+.compound-tile.alkali  { background: linear-gradient(180deg, #FFF, #ECF5FC); border-color: var(--alkali); }
+.compound-tile.salt    { background: linear-gradient(180deg, #FFF, #F5EEFC); border-color: #9D4EDD; }
+.compound-tile.water   { background: linear-gradient(180deg, #FFF, #ECF5F8); border-color: var(--water); }
+.formula-op { font-size: 22px; font-weight: 800; color: #6a5a40; padding: 0 4px; }
+
+/* 原子数チェック */
+.atom-check {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #6a5a40;
+  margin-top: 8px;
+}
+.atom-check .side {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.atom-check .at {
+  background: #fff;
+  border: 1px solid #d8c8a0;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-family: 'Kaisei Decol', serif;
+}
+.atom-check .at.match { background: #D7F0DC; border-color: #2E7D32; color: #2E7D32; }
+.atom-check .at.diff { background: #FFE2D6; border-color: #D9533C; color: #D9533C; }
+.atom-check .arrow { font-size: 20px; color: #BFAE85; }
+
+/* フィードバック */
+.feedback {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  display: none;
+  font-size: 13.5px;
+  line-height: 1.7;
+}
+.feedback.show { display: block; animation: pop-in 0.2s; }
+.feedback.ok { background: #D7F0DC; border-left: 5px solid #2E7D32; color: #1B5E20; }
+.feedback.ng { background: #FFE2D6; border-left: 5px solid #D9533C; color: #8C2A1A; }
+.feedback strong { display: block; font-weight: 800; font-size: 15px; margin-bottom: 4px; }
+@keyframes pop-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* STAGE 0 / 1 ビーカーキャンバス */
+.beaker-stage {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 10px 0;
+  flex-wrap: wrap;
+}
+.beaker {
+  width: 240px;
+  height: 170px;
+  background: linear-gradient(180deg, #FCFAEC 30%, #F5F1DC 100%);
+  border: 3px solid #BFAE85;
+  border-radius: 0 0 24px 24px;
+  border-top: none;
+  position: relative;
+  overflow: hidden;
+}
+.beaker.acid    { background: linear-gradient(180deg, #FFF8F0 30%, #FFEEE0 100%); border-color: var(--acid); }
+.beaker.alkali  { background: linear-gradient(180deg, #F0F8FF 30%, #E0EEFE 100%); border-color: var(--alkali); }
+.beaker.center  { width: 320px; height: 200px; background: linear-gradient(180deg, #FFF9E0 30%, #FFF4C2 100%); border-color: var(--gold); }
+.beaker .label {
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  border: 2px solid currentColor;
+  border-radius: 999px;
+  padding: 2px 12px;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.beaker.acid   .label { color: var(--acid); }
+.beaker.alkali .label { color: var(--alkali); }
+.beaker.center .label { color: #B57E00; }
+.beaker .ion {
+  position: absolute;
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Kaisei Decol', serif;
+  font-weight: 800;
+  color: #fff;
+  cursor: pointer;
+  user-select: none;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  transition: transform 0.15s, box-shadow 0.15s, opacity 0.4s;
+  border: 2px solid rgba(0,0,0,0.20);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+  font-size: 12px;
+  z-index: 2;
+}
+.beaker .ion:hover { transform: scale(1.10); box-shadow: 0 4px 12px rgba(0,0,0,0.28); }
+.beaker .ion.selected { outline: 3px solid #FFD700; transform: scale(1.15); box-shadow: 0 4px 14px rgba(255, 215, 0, 0.6); z-index: 5; }
+.beaker .ion.paired  { opacity: 0; pointer-events: none; transform: scale(0.5); }
+.beaker .ion.small   { width: 32px; height: 32px; font-size: 11px; }
+.beaker .ion .label-sup {
+  font-size: 9px;
+  vertical-align: super;
+}
+.ion.hp   { background: var(--ion-h); }
+.ion.ohm  { background: var(--ion-oh); }
+.ion.nap  { background: var(--ion-na); }
+.ion.clm  { background: var(--ion-cl); }
+.ion.ba2p { background: var(--ion-ba); }
+.ion.ca2p { background: var(--ion-ca); }
+.ion.no3m { background: var(--ion-no3); }
+.ion.so4m { background: var(--ion-so4); }
+.ion.h2o  { background: var(--water); color: #2A6080; }
+.ion.salt { background: linear-gradient(135deg, #C8B5E0, #B8A0D8); }
+.ion.precip {
+  background: #fff;
+  color: #555;
+  border-color: #ccc;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* STAGE 0/1 - 中央ビーカー（混ぜたあと） */
+.mixed-zone {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
+}
+.mixed-zone .center-beaker-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.precip-pool {
+  position: absolute;
+  bottom: 0;
+  left: 5%;
+  right: 5%;
+  height: 30px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.95));
+  border-radius: 0 0 18px 18px;
+  display: none;
+}
+.precip-pool.show { display: block; }
+.precip-caption {
+  text-align: center;
+  margin-top: 4px;
+  font-size: 12px;
+  color: #4a3a20;
+  background: #fffeec;
+  border: 2px dashed var(--gold);
+  border-radius: 8px;
+  padding: 4px 10px;
+  display: none;
+}
+.precip-caption.show { display: block; }
+
+/* STAGE 0: selectバー */
+.demo-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin: 8px 0;
+  align-items: center;
+}
+.demo-controls select {
+  padding: 6px 10px;
+  border: 2px solid #BFAE85;
+  border-radius: 10px;
+  background: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: #4a3a20;
+}
+
+/* STAGE 3 空欄埋め */
+.blank-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  font-family: 'Kaisei Decol', serif;
+  font-size: 20px;
+  padding: 12px 0;
+}
+.blank-row select {
+  padding: 6px 12px;
+  font-size: 17px;
+  font-weight: 700;
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+  background: #FFFAEA;
+  font-family: 'Kaisei Decol', serif;
+  color: #4a3a20;
+  min-width: 130px;
+}
+.blank-row select.correct { background: #D7F0DC; border-color: #2E7D32; }
+.blank-row select.wrong   { background: #FFE2D6; border-color: #D9533C; }
+
+/* STAGE 4 スコアバー */
+.score-bar {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+  margin: 8px 0;
+}
+.score-dot {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: #d8c8a0;
+  border: 2px solid #BFAE85;
+}
+.score-dot.ok { background: #5AA070; border-color: #2E7D32; }
+.score-dot.ng { background: #D9533C; border-color: #8C2A1A; }
+
+/* 反応式表示 */
+.formula-display {
+  font-family: 'Kaisei Decol', serif;
+  font-size: 18px;
+  text-align: center;
+  padding: 12px;
+  background: #FFFBF0;
+  border: 2px solid #EADFC4;
+  border-radius: 10px;
+  margin: 8px 0;
+  line-height: 1.6;
+}
+.formula-display .step-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #8a7a60;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+  display: block;
+  text-align: left;
+}
+.formula-display .line { padding: 2px 0; }
+.formula-display .sub { font-size: 0.7em; vertical-align: sub; }
+.formula-display .sup { font-size: 0.7em; vertical-align: super; }
+
+/* オーバーレイ説明 */
+.explainer-toggles {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 4px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.explainer-toggle-btn {
+  background: #fff;
+  border: 2px solid var(--accent2);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 11.5px;
+  cursor: pointer;
+  color: var(--accent2);
+  box-shadow: 2px 2px 0 var(--accent2);
+}
+.explainer-toggle-btn:hover { transform: translate(-1px, -1px); }
+.explainer-toggle-btn.active { background: var(--accent2); color: #fff; }
+.overlay-explainer {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  width: 320px;
+  max-width: 50%;
+  max-height: calc(100% - 28px);
+  background: rgba(255, 251, 240, 0.97);
+  border: 2px solid #EADFC4;
+  border-left: 5px solid var(--accent2);
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: none;
+  z-index: 10;
+  overflow-y: auto;
+  box-shadow: 0 6px 20px rgba(120, 100, 80, 0.18);
+}
+.overlay-explainer.show { display: block; animation: pop-in 0.2s; }
+.overlay-explainer h3 { margin: 0 0 8px 0; font-size: 14px; color: var(--accent2); }
+.overlay-explainer .close-btn {
+  position: absolute;
+  top: 6px; right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #8a7a60;
+}
+.overlay-explainer .panel-rx {
+  background: #FFFBF0;
+  border-left: 3px solid var(--accent2);
+  padding: 6px 10px;
+  margin: 8px 0;
+  font-family: 'Kaisei Decol', serif;
+  font-size: 14px;
+  text-align: center;
+}
+.overlay-explainer .body { font-size: 12.5px; line-height: 1.75; }
+.overlay-explainer .body p { margin: 4px 0; }
+.overlay-explainer .body .key {
+  background: #FFEBD0;
+  padding: 1px 6px;
+  border-radius: 5px;
+  font-weight: 700;
+}
+
+/* レスポンシブ */
+@media (max-width: 720px) {
+  header.title h1 { font-size: 16px; }
+  header.title .sub { font-size: 11px; }
+  .beaker { width: 90vw; max-width: 280px; }
+  .beaker.center { width: 95vw; max-width: 380px; }
+  .formula-row { font-size: 15px; }
+  .compound-tile .compound-name { font-size: 14px; }
+  .blank-row select { font-size: 14px; min-width: 100px; }
+  .chapter { padding: 10px; }
+}
+
+sub, sup { font-size: 0.72em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="title">
+    <h1>⚗️🧱 中和反応式ビルダー</h1>
+    <span class="sub">中3 理科 ／ 酸 + アルカリ → 塩 + 水</span>
+    <span class="rank-badge" id="rank-badge">🌱 みならい</span>
+  </header>
+
+  <div class="explainer-toggles">
+    <button class="explainer-toggle-btn" id="toggle-explainer">📘 中和の本質と塩</button>
+  </div>
+
+  <div class="progress-nav" id="progress-nav">
+    <button class="pdot active" data-stage="0"><span class="stnum">0</span>デモ</button>
+    <button class="pdot" data-stage="1"><span class="stnum">1</span>1:1中和</button>
+    <button class="pdot" data-stage="2"><span class="stnum">2</span>係数調整</button>
+    <button class="pdot" data-stage="3"><span class="stnum">3</span>空欄埋め</button>
+    <button class="pdot" data-stage="4"><span class="stnum">4</span>最終</button>
+  </div>
+
+  <!-- ===== STAGE 0: デモ ===== -->
+  <section class="chapter active" id="ch-0">
+    <div class="overlay-explainer" id="overlay-explainer">
+      <button class="close-btn" id="overlay-close">×</button>
+      <h3>📘 中和の本質</h3>
+      <div class="body">
+        <p>酸の <span class="key" style="color:var(--acid)">H⁺</span> とアルカリの <span class="key" style="color:var(--alkali)">OH⁻</span> が出会うと、結合して <strong>水（H₂O）</strong> になります。これが中和の本質。</p>
+      </div>
+      <div class="panel-rx">H⁺ + OH⁻ → H₂O</div>
+      <div class="body">
+        <p>残った 陽イオン と 陰イオン の組み合わせが <strong>塩（えん）</strong>。たとえば HCl + NaOH なら、残った Na⁺ と Cl⁻ で <strong>NaCl</strong> ができる。</p>
+        <p>反応式の全体: <span class="key">酸 + アルカリ → 塩 + 水</span></p>
+        <p>⚠️ <strong>H₂SO₄ + Ba(OH)₂</strong> のときだけ、塩（BaSO₄）が水に溶けず <span class="key" style="color:#888">白い沈殿</span> になる。これ重要！</p>
+      </div>
+    </div>
+
+    <h2>🎬 STAGE 0: デモを見る</h2>
+    <p class="lead">
+      まずは <span class="key">酸 + アルカリ → 塩 + 水</span> がどう起きるかを観察してみよう。
+      下から酸とアルカリを選んで <b>▶ 観察スタート</b> を押すと、電離→中和→塩生成のアニメが流れる。
+    </p>
+
+    <div class="demo-controls">
+      <label>酸: <select id="demo-acid">
+        <option value="HCl" selected>HCl 塩酸</option>
+        <option value="H2SO4">H₂SO₄ 硫酸</option>
+        <option value="HNO3">HNO₃ 硝酸</option>
+      </select></label>
+      <label>アルカリ: <select id="demo-alkali">
+        <option value="NaOH" selected>NaOH 水酸化ナトリウム</option>
+        <option value="Ba(OH)2">Ba(OH)₂ 水酸化バリウム</option>
+        <option value="Ca(OH)2">Ca(OH)₂ 水酸化カルシウム</option>
+      </select></label>
+      <button class="btn primary" id="demo-start">▶ 観察スタート</button>
+      <button class="btn ghost" id="demo-reset">↻ リセット</button>
+    </div>
+
+    <div class="beaker-stage" id="demo-stage">
+      <div class="beaker acid" id="demo-acid-beaker">
+        <span class="label" id="demo-acid-label">HCl</span>
+      </div>
+      <div class="beaker alkali" id="demo-alkali-beaker">
+        <span class="label" id="demo-alkali-label">NaOH</span>
+      </div>
+    </div>
+
+    <div class="mixed-zone" id="demo-mixed" style="display:none;">
+      <div class="center-beaker-wrap">
+        <div class="beaker center" id="demo-center">
+          <span class="label">混ぜたあと</span>
+          <div class="precip-pool" id="demo-precip"></div>
+        </div>
+        <div class="precip-caption" id="demo-precip-caption">白い沈殿 (BaSO₄) が生じた！</div>
+      </div>
+    </div>
+
+    <div class="formula-display" id="demo-formula">
+      <span class="step-label">中和の反応式（クリックで観察スタート）</span>
+      <div class="line">　</div>
+    </div>
+
+    <div class="chapter-nav">
+      <button class="btn" disabled>← 戻る</button>
+      <button class="btn primary" data-goto="1">次へ：自分で組み立てる →</button>
+    </div>
+  </section>
+
+  <!-- ===== STAGE 1: 1:1中和でドラッグ ===== -->
+  <section class="chapter" id="ch-1">
+    <h2>🤝 STAGE 1: 1:1で中和してみよう</h2>
+    <p class="lead">
+      <span class="key">H⁺</span> を1個クリック → <span class="key">OH⁻</span> を1個クリック で <b>ペア化</b>。
+      水（H₂O）ができるよ。残った陽イオンと陰イオンを同じくクリックしてペアにすると、<b>塩</b>ができる。
+    </p>
+
+    <div class="formula-display" id="st1-formula"></div>
+
+    <div class="beaker-stage">
+      <div class="beaker acid" id="st1-acid">
+        <span class="label" id="st1-acid-label">HCl</span>
+      </div>
+      <div class="beaker alkali" id="st1-alkali">
+        <span class="label" id="st1-alkali-label">NaOH</span>
+      </div>
+    </div>
+
+    <div class="feedback" id="st1-feedback"></div>
+
+    <div class="chapter-nav">
+      <button class="btn" data-goto="0">← デモへ戻る</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn ghost sm" id="st1-prev-q" disabled>← 前の問題</button>
+        <span class="btn sm" style="cursor:default;box-shadow:none;" id="st1-q-counter">問題 1 / 2</span>
+        <button class="btn ghost sm" id="st1-next-q">次の問題 →</button>
+      </div>
+      <button class="btn primary" data-goto="2">次へ：係数の調整 →</button>
+    </div>
+  </section>
+
+  <!-- ===== STAGE 2: 係数±UI ===== -->
+  <section class="chapter" id="ch-2">
+    <h2>⚖️ STAGE 2: 係数で原子数を合わせよう</h2>
+    <p class="lead">
+      <span class="key">2価のイオン</span>が出てくると、係数が必要になる。<br>
+      <b>＋／－</b>ボタンで係数を変えて、<b>左右の原子数を一致</b>させよう。
+    </p>
+
+    <div class="formula-row" id="st2-formula"></div>
+    <div class="atom-check" id="st2-atom"></div>
+
+    <div class="box tight" style="text-align:center;margin-top:10px;">
+      <button class="btn primary" id="st2-check">✅ 答え合わせ</button>
+      <button class="btn ghost" id="st2-hint">💡 ヒント</button>
+    </div>
+
+    <div class="feedback" id="st2-feedback"></div>
+
+    <div class="chapter-nav">
+      <button class="btn" data-goto="1">← 戻る</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn ghost sm" id="st2-prev-q" disabled>← 前</button>
+        <span class="btn sm" style="cursor:default;box-shadow:none;" id="st2-q-counter">問題 1 / 5</span>
+        <button class="btn ghost sm" id="st2-next-q">次 →</button>
+      </div>
+      <button class="btn primary" data-goto="3">次へ：空欄埋め →</button>
+    </div>
+  </section>
+
+  <!-- ===== STAGE 3: 空欄埋め ===== -->
+  <section class="chapter" id="ch-3">
+    <h2>📝 STAGE 3: 空欄を埋めて完成させよう</h2>
+    <p class="lead">
+      左辺の <b>酸＋アルカリ</b> から、右辺に何ができるかを選んでね。<br>
+      ヒント：左辺のイオンを思い浮かべて、組み替えると分かるよ。
+    </p>
+
+    <div class="blank-row" id="st3-formula"></div>
+
+    <div class="box tight" style="text-align:center;">
+      <button class="btn primary" id="st3-check">✅ 答え合わせ</button>
+      <button class="btn ghost" id="st3-hint">💡 ヒント：イオンに分けて見る</button>
+    </div>
+
+    <div class="formula-display" id="st3-hint-area" style="display:none;"></div>
+
+    <div class="feedback" id="st3-feedback"></div>
+
+    <div class="chapter-nav">
+      <button class="btn" data-goto="2">← 戻る</button>
+      <div style="display:flex;gap:8px;">
+        <span class="btn sm" style="cursor:default;box-shadow:none;" id="st3-q-counter">問題 1 / 5</span>
+      </div>
+      <button class="btn primary" data-goto="4">次へ：最終チャレンジ →</button>
+    </div>
+  </section>
+
+  <!-- ===== STAGE 4: ファイナルチャレンジ ===== -->
+  <section class="chapter" id="ch-4">
+    <h2>🏆 STAGE 4: ファイナルチャレンジ</h2>
+    <p class="lead">
+      9パターンから <b>ランダム5問</b>。塩を選び、係数を入れて完成させよう。<br>
+      5問正解で <b>中和マスター 👑</b> 認定！
+    </p>
+
+    <div class="score-bar" id="st4-score"></div>
+
+    <div class="formula-row" id="st4-formula"></div>
+    <div class="atom-check" id="st4-atom"></div>
+    <div class="blank-row" id="st4-salt-select"></div>
+
+    <div class="box tight" style="text-align:center;">
+      <button class="btn primary" id="st4-check">✅ 答え合わせ</button>
+    </div>
+
+    <div class="feedback" id="st4-feedback"></div>
+
+    <div class="chapter-nav">
+      <button class="btn" data-goto="3">← 戻る</button>
+      <span class="btn sm" style="cursor:default;box-shadow:none;" id="st4-q-counter">1 / 5</span>
+      <button class="btn ghost" id="st4-restart">↻ 最初からやり直す</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+"use strict";
+
+// ============================================================
+// データ定義
+// ============================================================
+
+const COMPOUNDS = {
+  HCl:     { ja:'塩酸',     kind:'acid',   d:'HCl',                                                ions:[{type:'H+',n:1},{type:'Cl-',n:1}],  atoms:{H:1,Cl:1} },
+  H2SO4:   { ja:'硫酸',     kind:'acid',   d:'H<span class="sub">2</span>SO<span class="sub">4</span>', ions:[{type:'H+',n:2},{type:'SO42-',n:1}], atoms:{H:2,S:1,O:4} },
+  HNO3:    { ja:'硝酸',     kind:'acid',   d:'HNO<span class="sub">3</span>',                       ions:[{type:'H+',n:1},{type:'NO3-',n:1}], atoms:{H:1,N:1,O:3} },
+  NaOH:    { ja:'水酸化ナトリウム', kind:'alkali', d:'NaOH',                                        ions:[{type:'Na+',n:1},{type:'OH-',n:1}], atoms:{Na:1,O:1,H:1} },
+  'Ba(OH)2':{ ja:'水酸化バリウム',  kind:'alkali', d:'Ba(OH)<span class="sub">2</span>',           ions:[{type:'Ba2+',n:1},{type:'OH-',n:2}], atoms:{Ba:1,O:2,H:2} },
+  'Ca(OH)2':{ ja:'水酸化カルシウム', kind:'alkali', d:'Ca(OH)<span class="sub">2</span>',          ions:[{type:'Ca2+',n:1},{type:'OH-',n:2}], atoms:{Ca:1,O:2,H:2} },
+
+  NaCl:    { ja:'塩化ナトリウム', kind:'salt', d:'NaCl',                                          atoms:{Na:1,Cl:1}, precip:false },
+  BaCl2:   { ja:'塩化バリウム',   kind:'salt', d:'BaCl<span class="sub">2</span>',               atoms:{Ba:1,Cl:2}, precip:false },
+  CaCl2:   { ja:'塩化カルシウム', kind:'salt', d:'CaCl<span class="sub">2</span>',               atoms:{Ca:1,Cl:2}, precip:false },
+  Na2SO4:  { ja:'硫酸ナトリウム', kind:'salt', d:'Na<span class="sub">2</span>SO<span class="sub">4</span>', atoms:{Na:2,S:1,O:4}, precip:false },
+  BaSO4:   { ja:'硫酸バリウム（白沈殿）', kind:'salt', d:'BaSO<span class="sub">4</span>',        atoms:{Ba:1,S:1,O:4}, precip:true },
+  CaSO4:   { ja:'硫酸カルシウム', kind:'salt', d:'CaSO<span class="sub">4</span>',               atoms:{Ca:1,S:1,O:4}, precip:false },
+  NaNO3:   { ja:'硝酸ナトリウム', kind:'salt', d:'NaNO<span class="sub">3</span>',               atoms:{Na:1,N:1,O:3}, precip:false },
+  'Ba(NO3)2':{ ja:'硝酸バリウム', kind:'salt', d:'Ba(NO<span class="sub">3</span>)<span class="sub">2</span>', atoms:{Ba:1,N:2,O:6}, precip:false },
+  'Ca(NO3)2':{ ja:'硝酸カルシウム', kind:'salt', d:'Ca(NO<span class="sub">3</span>)<span class="sub">2</span>', atoms:{Ca:1,N:2,O:6}, precip:false },
+
+  H2O:     { ja:'水', kind:'water', d:'H<span class="sub">2</span>O', atoms:{H:2,O:1} },
+};
+
+// 9パターンの中和反応
+const REACTIONS = [
+  { idx:0, acid:'HCl',   alkali:'NaOH',     coefA:1, coefB:1, salt:'NaCl',      coefS:1, coefW:1, precip:false, level:1 },
+  { idx:1, acid:'HNO3',  alkali:'NaOH',     coefA:1, coefB:1, salt:'NaNO3',     coefS:1, coefW:1, precip:false, level:1 },
+  { idx:2, acid:'H2SO4', alkali:'NaOH',     coefA:1, coefB:2, salt:'Na2SO4',    coefS:1, coefW:2, precip:false, level:2 },
+  { idx:3, acid:'HCl',   alkali:'Ba(OH)2',  coefA:2, coefB:1, salt:'BaCl2',     coefS:1, coefW:2, precip:false, level:2 },
+  { idx:4, acid:'HCl',   alkali:'Ca(OH)2',  coefA:2, coefB:1, salt:'CaCl2',     coefS:1, coefW:2, precip:false, level:2 },
+  { idx:5, acid:'HNO3',  alkali:'Ba(OH)2',  coefA:2, coefB:1, salt:'Ba(NO3)2',  coefS:1, coefW:2, precip:false, level:2 },
+  { idx:6, acid:'HNO3',  alkali:'Ca(OH)2',  coefA:2, coefB:1, salt:'Ca(NO3)2',  coefS:1, coefW:2, precip:false, level:2 },
+  { idx:7, acid:'H2SO4', alkali:'Ba(OH)2',  coefA:1, coefB:1, salt:'BaSO4',     coefS:1, coefW:2, precip:true,  level:3 },
+  { idx:8, acid:'H2SO4', alkali:'Ca(OH)2',  coefA:1, coefB:1, salt:'CaSO4',     coefS:1, coefW:2, precip:false, level:3 },
+];
+
+// イオンの表示クラス
+const ION_CLASS = {
+  'H+': 'hp', 'OH-': 'ohm', 'Na+': 'nap', 'Cl-': 'clm',
+  'Ba2+': 'ba2p', 'Ca2+': 'ca2p', 'NO3-': 'no3m', 'SO42-': 'so4m',
+};
+const ION_LABEL = {
+  'H+': '<span>H</span><span class="label-sup">+</span>',
+  'OH-': '<span>OH</span><span class="label-sup">−</span>',
+  'Na+': '<span>Na</span><span class="label-sup">+</span>',
+  'Cl-': '<span>Cl</span><span class="label-sup">−</span>',
+  'Ba2+': '<span>Ba</span><span class="label-sup">2+</span>',
+  'Ca2+': '<span>Ca</span><span class="label-sup">2+</span>',
+  'NO3-': '<span>NO₃</span><span class="label-sup">−</span>',
+  'SO42-': '<span>SO₄</span><span class="label-sup">2−</span>',
+};
+
+// ============================================================
+// 状態管理 (localStorage)
+// ============================================================
+
+const STATE_KEY = 'neutralization_builder_v1';
+const STATE = loadState();
+
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem(STATE_KEY) || '{}');
+    return {
+      cleared: s.cleared || { 0:false, 1:false, 2:false, 3:false, 4:false },
+      rank:    s.rank    || 0,
+    };
+  } catch(e) {
+    return { cleared:{0:false,1:false,2:false,3:false,4:false}, rank:0 };
+  }
+}
+function saveState() {
+  try {
+    localStorage.setItem(STATE_KEY, JSON.stringify(STATE));
+  } catch(e) {}
+}
+function markCleared(stage) {
+  STATE.cleared[stage] = true;
+  STATE.rank = Math.max(STATE.rank, stage + 1);
+  saveState();
+  updateProgressNav();
+  updateRankBadge();
+}
+
+const RANKS = [
+  '🌱 みならい',
+  '🔰 初級',
+  '💪 中級',
+  '⭐ 上級',
+  '👑 中和マスター',
+  '✨ 完全マスター',
+];
+
+function updateRankBadge() {
+  const el = document.getElementById('rank-badge');
+  el.textContent = RANKS[Math.min(STATE.rank, RANKS.length - 1)];
+}
+
+function updateProgressNav() {
+  document.querySelectorAll('.pdot').forEach(d => {
+    const st = parseInt(d.dataset.stage);
+    d.classList.toggle('cleared', STATE.cleared[st]);
+  });
+}
+
+// ============================================================
+// 効果音 (chem-gym 流用パターン、軽量)
+// ============================================================
+
+const SFX = (function() {
+  let ctx = null;
+  function ensureCtx() {
+    if (!ctx) {
+      try { ctx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch(e) {}
+    }
+    return ctx;
+  }
+  function beep(freq, dur, type='sine', vol=0.18) {
+    const c = ensureCtx();
+    if (!c) return;
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = type;
+    o.frequency.value = freq;
+    o.connect(g); g.connect(c.destination);
+    g.gain.setValueAtTime(vol, c.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + dur);
+    o.start();
+    o.stop(c.currentTime + dur);
+  }
+  return {
+    click:   () => beep(800, 0.06, 'sine', 0.12),
+    pop:     () => beep(550, 0.10, 'triangle', 0.18),
+    correct: () => { beep(660, 0.10); setTimeout(()=>beep(880, 0.18), 80); },
+    wrong:   () => { beep(220, 0.18, 'sawtooth', 0.14); },
+    fanfare: () => {
+      const notes = [523, 659, 784, 1046];
+      notes.forEach((n,i)=>setTimeout(()=>beep(n, 0.22, 'triangle', 0.20), i*120));
+    },
+  };
+})();
+
+// ============================================================
+// 紙吹雪
+// ============================================================
+function confetti(durationMs=2200) {
+  const cv = document.createElement('canvas');
+  cv.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;';
+  document.body.appendChild(cv);
+  const ctx = cv.getContext('2d');
+  function resize() { cv.width = window.innerWidth; cv.height = window.innerHeight; }
+  resize();
+  const colors = ['#E07A6A','#5FA8D8','#E8A040','#6FB89A','#9D4EDD','#A4C639'];
+  const parts = [];
+  for (let i = 0; i < 120; i++) {
+    parts.push({
+      x: Math.random() * cv.width,
+      y: -20 - Math.random() * 200,
+      vx: (Math.random() - 0.5) * 4,
+      vy: 2 + Math.random() * 4,
+      r: 4 + Math.random() * 6,
+      c: colors[Math.floor(Math.random() * colors.length)],
+      rot: Math.random() * Math.PI * 2,
+      vr: (Math.random() - 0.5) * 0.2,
+    });
+  }
+  const start = Date.now();
+  (function tick() {
+    ctx.clearRect(0, 0, cv.width, cv.height);
+    for (const p of parts) {
+      p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+      ctx.save();
+      ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.c;
+      ctx.fillRect(-p.r/2, -p.r/2, p.r, p.r);
+      ctx.restore();
+    }
+    if (Date.now() - start < durationMs) requestAnimationFrame(tick);
+    else cv.remove();
+  })();
+}
+
+// ============================================================
+// ナビゲーション
+// ============================================================
+function goto(n) {
+  document.querySelectorAll('.chapter').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.pdot').forEach(d => d.classList.remove('active'));
+  const ch = document.getElementById('ch-' + n);
+  if (ch) ch.classList.add('active');
+  const dot = document.querySelector('.pdot[data-stage="' + n + '"]');
+  if (dot) dot.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // ステージごとの初期化
+  if (n === 0) initStage0();
+  if (n === 1) initStage1();
+  if (n === 2) initStage2();
+  if (n === 3) initStage3();
+  if (n === 4) initStage4();
+}
+
+// ============================================================
+// 補助: 化合物表示
+// ============================================================
+function compoundHTML(key) {
+  return COMPOUNDS[key] ? COMPOUNDS[key].d : key;
+}
+
+// 化学反応式を構造化表示（係数つき）
+function formulaHTML(coefA, acid, coefB, alkali, coefS, salt, coefW) {
+  const part = (coef, key) => {
+    const c = (coef > 1) ? coef : '';
+    return `<span>${c}${compoundHTML(key)}</span>`;
+  };
+  return `<span class="line">${part(coefA, acid)} + ${part(coefB, alkali)} → ${part(coefS, salt)} + ${part(coefW, 'H2O')}</span>`;
+}
+
+// 原子集計
+function multiplyAtoms(atoms, coef) {
+  const o = {};
+  for (const k in atoms) o[k] = atoms[k] * coef;
+  return o;
+}
+function addAtoms(a, b) {
+  const o = Object.assign({}, a);
+  for (const k in b) o[k] = (o[k] || 0) + b[k];
+  return o;
+}
+function leftRightAtoms(coefA, acid, coefB, alkali, coefS, salt, coefW) {
+  const left  = addAtoms(multiplyAtoms(COMPOUNDS[acid].atoms, coefA), multiplyAtoms(COMPOUNDS[alkali].atoms, coefB));
+  const right = addAtoms(multiplyAtoms(COMPOUNDS[salt].atoms, coefS), multiplyAtoms(COMPOUNDS.H2O.atoms, coefW));
+  return { left, right };
+}
+function atomsMatch(L, R) {
+  const keys = new Set([...Object.keys(L), ...Object.keys(R)]);
+  for (const k of keys) if ((L[k]||0) !== (R[k]||0)) return false;
+  return true;
+}
+function isMinimal(coefs) {
+  // GCD ですべての係数が共通因子を持たない（最小整数比）
+  function gcd(a, b) { return b ? gcd(b, a%b) : a; }
+  return coefs.reduce((g, c) => gcd(g, c), coefs[0]) === 1;
+}
+
+// ============================================================
+// STAGE 0 デモ
+// ============================================================
+let stage0Anim = { running:false, timer:null };
+
+function initStage0() {
+  stopStage0();
+  document.getElementById('demo-mixed').style.display = 'none';
+  clearBeakerIons('demo-acid-beaker');
+  clearBeakerIons('demo-alkali-beaker');
+  clearBeakerIons('demo-center');
+  document.getElementById('demo-precip').classList.remove('show');
+  document.getElementById('demo-precip-caption').classList.remove('show');
+  document.getElementById('demo-formula').innerHTML = '<span class="step-label">中和の反応式（▶ 観察スタートを押してね）</span><div class="line">　</div>';
+  updateDemoLabels();
+}
+function updateDemoLabels() {
+  const a = document.getElementById('demo-acid').value;
+  const b = document.getElementById('demo-alkali').value;
+  document.getElementById('demo-acid-label').innerHTML  = compoundHTML(a);
+  document.getElementById('demo-alkali-label').innerHTML = compoundHTML(b);
+}
+function stopStage0() {
+  stage0Anim.running = false;
+  if (stage0Anim.timer) { clearTimeout(stage0Anim.timer); stage0Anim.timer = null; }
+}
+function clearBeakerIons(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.querySelectorAll('.ion').forEach(n => n.remove());
+}
+
+function placeIonInBeaker(beakerEl, type, slot, total) {
+  const ion = document.createElement('div');
+  ion.className = 'ion ' + (ION_CLASS[type] || '');
+  ion.innerHTML = ION_LABEL[type] || type;
+  // ビーカー内に格子配置
+  const cols = Math.min(3, total);
+  const rows = Math.ceil(total / cols);
+  const col = slot % cols;
+  const row = Math.floor(slot / cols);
+  const padX = 18, padY = 50;
+  const usableW = beakerEl.clientWidth - padX*2 - 42;
+  const usableH = beakerEl.clientHeight - padY - 30;
+  const x = padX + (cols > 1 ? (usableW / (cols-1)) * col : usableW/2);
+  const y = padY + (rows > 1 ? (usableH / (rows-1)) * row : usableH/2);
+  ion.style.left = x + 'px';
+  ion.style.top  = y + 'px';
+  beakerEl.appendChild(ion);
+  return ion;
+}
+
+function getReactionByPair(acidKey, alkaliKey) {
+  return REACTIONS.find(r => r.acid === acidKey && r.alkali === alkaliKey);
+}
+
+function runStage0Demo() {
+  stopStage0();
+  const acidKey = document.getElementById('demo-acid').value;
+  const alkaliKey = document.getElementById('demo-alkali').value;
+  const rx = getReactionByPair(acidKey, alkaliKey);
+  if (!rx) return;
+  stage0Anim.running = true;
+
+  // 表示リセット
+  clearBeakerIons('demo-acid-beaker');
+  clearBeakerIons('demo-alkali-beaker');
+  clearBeakerIons('demo-center');
+  document.getElementById('demo-mixed').style.display = 'none';
+  document.getElementById('demo-precip').classList.remove('show');
+  document.getElementById('demo-precip-caption').classList.remove('show');
+
+  const acidBeaker = document.getElementById('demo-acid-beaker');
+  const alkaliBeaker = document.getElementById('demo-alkali-beaker');
+
+  // PHASE 1: 電離（係数分のイオンをビーカーに置く）
+  const acidIons = COMPOUNDS[acidKey].ions;
+  const alkaliIons = COMPOUNDS[alkaliKey].ions;
+  // coefA 個の酸が電離 → 各イオン coefA × ions.n 個
+  let acidIonList = [];
+  acidIons.forEach(i => {
+    for (let k = 0; k < rx.coefA * i.n; k++) acidIonList.push(i.type);
+  });
+  let alkaliIonList = [];
+  alkaliIons.forEach(i => {
+    for (let k = 0; k < rx.coefB * i.n; k++) alkaliIonList.push(i.type);
+  });
+  acidIonList.forEach((t, i) => placeIonInBeaker(acidBeaker, t, i, acidIonList.length));
+  alkaliIonList.forEach((t, i) => placeIonInBeaker(alkaliBeaker, t, i, alkaliIonList.length));
+
+  // 反応式表示（段階的に）
+  const formula = document.getElementById('demo-formula');
+  formula.innerHTML =
+    '<span class="step-label">① 電離</span>' +
+    '<div class="line">' + (rx.coefA>1?rx.coefA:'') + compoundHTML(acidKey) + ' → ' + ionFormulaHTML(acidKey, rx.coefA) + '</div>' +
+    '<div class="line">' + (rx.coefB>1?rx.coefB:'') + compoundHTML(alkaliKey) + ' → ' + ionFormulaHTML(alkaliKey, rx.coefB) + '</div>';
+  SFX.pop();
+
+  // PHASE 2: 混ぜる
+  stage0Anim.timer = setTimeout(() => {
+    if (!stage0Anim.running) return;
+    document.getElementById('demo-mixed').style.display = 'flex';
+    SFX.pop();
+    formula.innerHTML +=
+      '<span class="step-label" style="margin-top:8px;">② 中和（H⁺ + OH⁻ → H₂O）</span>' +
+      '<div class="line">' + (rx.coefW>1?rx.coefW:'') + 'H⁺ + ' + (rx.coefW>1?rx.coefW:'') + 'OH⁻ → ' + (rx.coefW>1?rx.coefW:'') + 'H<span class="sub">2</span>O</div>';
+
+    // 沈殿パターン
+    if (rx.precip) {
+      stage0Anim.timer = setTimeout(() => {
+        if (!stage0Anim.running) return;
+        document.getElementById('demo-precip').classList.add('show');
+        document.getElementById('demo-precip-caption').classList.add('show');
+        SFX.fanfare();
+      }, 700);
+    }
+
+    // PHASE 3: 反応式全体
+    stage0Anim.timer = setTimeout(() => {
+      if (!stage0Anim.running) return;
+      formula.innerHTML +=
+        '<span class="step-label" style="margin-top:8px;">③ 全体の反応式</span>' +
+        '<div class="line" style="font-size:1.2em;font-weight:800;color:#8C4A28;">' +
+          formulaHTML(rx.coefA, acidKey, rx.coefB, alkaliKey, rx.coefS, rx.salt, rx.coefW) +
+        '</div>';
+      SFX.correct();
+      markCleared(0);
+    }, 1500);
+  }, 1300);
+}
+
+function ionFormulaHTML(compoundKey, coef) {
+  // 例: 2HCl → 2H⁺ + 2Cl⁻
+  const ions = COMPOUNDS[compoundKey].ions;
+  return ions.map(i => {
+    const c = (coef * i.n) > 1 ? (coef * i.n) : '';
+    return c + (ION_LABEL[i.type] || i.type).replace(/<[^>]+>/g, m => m); // raw
+  }).join(' + ');
+}
+
+document.getElementById('demo-acid').addEventListener('change', initStage0);
+document.getElementById('demo-alkali').addEventListener('change', initStage0);
+document.getElementById('demo-start').addEventListener('click', runStage0Demo);
+document.getElementById('demo-reset').addEventListener('click', initStage0);
+
+// ============================================================
+// STAGE 1 - 1:1中和でドラッグ(クリック2回)
+// ============================================================
+const STAGE1_QS = [
+  { acid:'HCl',  alkali:'NaOH', salt:'NaCl' },
+  { acid:'HNO3', alkali:'NaOH', salt:'NaNO3' },
+];
+let st1 = { qIdx:0, selected:null, ions:{} /* id -> {el,type,paired,side} */, nextId:0,
+            pairCount:{water:0, salt:0}, target:{water:0, salt:0} };
+
+function initStage1() {
+  const q = STAGE1_QS[st1.qIdx];
+  st1.selected = null;
+  st1.ions = {};
+  st1.nextId = 0;
+  st1.pairCount = { water:0, salt:0 };
+  // 1分子ずつなので：H⁺×1, 陰×1 / 陽×1, OH⁻×1 → 中和1回 + 塩1個
+  const acidIons = COMPOUNDS[q.acid].ions;
+  const alkaliIons = COMPOUNDS[q.alkali].ions;
+  st1.target.water = acidIons.find(i=>i.type==='H+').n;  // 1
+  st1.target.salt  = 1; // 残りで塩1個
+
+  document.getElementById('st1-acid-label').innerHTML = compoundHTML(q.acid);
+  document.getElementById('st1-alkali-label').innerHTML = compoundHTML(q.alkali);
+  document.getElementById('st1-q-counter').textContent = `問題 ${st1.qIdx+1} / ${STAGE1_QS.length}`;
+  document.getElementById('st1-prev-q').disabled = st1.qIdx === 0;
+  document.getElementById('st1-next-q').disabled = st1.qIdx === STAGE1_QS.length - 1;
+  document.getElementById('st1-feedback').className = 'feedback';
+
+  // 反応式（薄く表示）
+  const rx = getReactionByPair(q.acid, q.alkali);
+  document.getElementById('st1-formula').innerHTML =
+    '<span class="step-label">目標：H⁺ と OH⁻ をペアにして水を作り、残ったイオンで塩を作る</span>' +
+    '<div class="line" style="opacity:0.5;">' +
+      formulaHTML(rx.coefA, rx.acid, rx.coefB, rx.alkali, rx.coefS, rx.salt, rx.coefW) +
+    '</div>';
+
+  // ビーカー配置
+  const acidBeaker = document.getElementById('st1-acid');
+  const alkaliBeaker = document.getElementById('st1-alkali');
+  clearBeakerIons('st1-acid');
+  clearBeakerIons('st1-alkali');
+  acidIons.forEach((ion, idx) => {
+    for (let k = 0; k < ion.n; k++) {
+      const id = ++st1.nextId;
+      const el = placeIonInBeaker(acidBeaker, ion.type, idx*ion.n + k, acidIons.reduce((s,i)=>s+i.n,0));
+      el.dataset.id = id;
+      el.addEventListener('click', () => onSt1IonClick(id));
+      st1.ions[id] = { el, type: ion.type, paired:false, side:'acid' };
+    }
+  });
+  alkaliIons.forEach((ion, idx) => {
+    for (let k = 0; k < ion.n; k++) {
+      const id = ++st1.nextId;
+      const el = placeIonInBeaker(alkaliBeaker, ion.type, idx*ion.n + k, alkaliIons.reduce((s,i)=>s+i.n,0));
+      el.dataset.id = id;
+      el.addEventListener('click', () => onSt1IonClick(id));
+      st1.ions[id] = { el, type: ion.type, paired:false, side:'alkali' };
+    }
+  });
+}
+
+function onSt1IonClick(id) {
+  const ion = st1.ions[id];
+  if (!ion || ion.paired) return;
+  SFX.click();
+  if (st1.selected === null) {
+    st1.selected = id;
+    ion.el.classList.add('selected');
+  } else if (st1.selected === id) {
+    // 同じものをもう一度クリック→選択解除
+    ion.el.classList.remove('selected');
+    st1.selected = null;
+  } else {
+    const other = st1.ions[st1.selected];
+    other.el.classList.remove('selected');
+    // ペアにできるか？
+    if (canPair(ion.type, other.type)) {
+      makePair(id, st1.selected);
+    } else {
+      // 不適切な組み合わせ
+      st1.selected = id;
+      ion.el.classList.add('selected');
+      showSt1Feedback('ng', '別の組み合わせ',
+        '同じ電荷どうし（陽イオン×陽イオン or 陰イオン×陰イオン）はペアになれないよ。<br>陽イオン（赤・橙・紫・黄緑）と陰イオン（青・緑・ピンク・オレンジ）を組み合わせよう。');
+    }
+  }
+}
+
+function canPair(a, b) {
+  const isCation = t => ['H+','Na+','Ba2+','Ca2+'].includes(t);
+  const isAnion  = t => ['OH-','Cl-','NO3-','SO42-'].includes(t);
+  return (isCation(a) && isAnion(b)) || (isAnion(a) && isCation(b));
+}
+
+function makePair(idA, idB) {
+  const a = st1.ions[idA], b = st1.ions[idB];
+  a.paired = true; b.paired = true;
+  const isH2O = (a.type === 'H+' && b.type === 'OH-') || (a.type === 'OH-' && b.type === 'H+');
+  if (isH2O) {
+    st1.pairCount.water++;
+    SFX.pop();
+    showH2OAnim(a.el, b.el);
+  } else {
+    st1.pairCount.salt++;
+    SFX.correct();
+    showSaltAnim(a, b);
+  }
+  setTimeout(() => { a.el.classList.add('paired'); b.el.classList.add('paired'); }, 50);
+  st1.selected = null;
+  // 完了判定
+  if (st1.pairCount.water >= st1.target.water && st1.pairCount.salt >= st1.target.salt) {
+    setTimeout(() => {
+      const q = STAGE1_QS[st1.qIdx];
+      const rx = getReactionByPair(q.acid, q.alkali);
+      showSt1Feedback('ok', '⭕ 完成！',
+        '水と塩ができたね！<br>反応式: ' +
+        formulaHTML(rx.coefA, rx.acid, rx.coefB, rx.alkali, rx.coefS, rx.salt, rx.coefW));
+      SFX.fanfare();
+      if (st1.qIdx === STAGE1_QS.length - 1) markCleared(1);
+    }, 600);
+  }
+}
+
+function showH2OAnim(elA, elB) {
+  // 中央あたりに H2O が一瞬光る演出（モーダルではなく、ビーカー外に小さく）
+  const rect = elA.getBoundingClientRect();
+  const flash = document.createElement('div');
+  flash.style.cssText = `position:fixed;left:${rect.left}px;top:${rect.top}px;width:48px;height:48px;border-radius:50%;background:radial-gradient(closest-side,#fff,#A6D8E8 60%,transparent);pointer-events:none;z-index:9999;animation:flash-anim 0.6s ease-out forwards;`;
+  document.body.appendChild(flash);
+  setTimeout(() => flash.remove(), 700);
+}
+function showSaltAnim(a, b) {
+  // 塩生成は両イオンをまとめて表示
+  showH2OAnim(a.el, b.el);
+}
+
+function showSt1Feedback(kind, title, body) {
+  const fb = document.getElementById('st1-feedback');
+  fb.className = 'feedback show ' + kind;
+  fb.innerHTML = '<strong>' + title + '</strong>' + body;
+}
+
+document.getElementById('st1-prev-q').addEventListener('click', () => {
+  if (st1.qIdx > 0) { st1.qIdx--; initStage1(); }
+});
+document.getElementById('st1-next-q').addEventListener('click', () => {
+  if (st1.qIdx < STAGE1_QS.length - 1) { st1.qIdx++; initStage1(); }
+});
+
+// flash アニメ用 CSS（動的追加）
+(function() {
+  const s = document.createElement('style');
+  s.textContent = '@keyframes flash-anim{0%{transform:scale(0.5);opacity:0;}30%{transform:scale(1.2);opacity:1;}100%{transform:scale(2.0);opacity:0;}}';
+  document.head.appendChild(s);
+})();
+
+// ============================================================
+// STAGE 2 - 係数±UI
+// ============================================================
+const STAGE2_QS = REACTIONS.filter(r => r.level === 2 || (r.level === 3 && r.precip));
+// = [Na2SO4, BaCl2, CaCl2, Ba(NO3)2, Ca(NO3)2, BaSO4] の6問
+let st2 = { qIdx:0, coefs:{a:1, b:1, s:1, w:1} };
+
+function initStage2() {
+  st2.qIdx = Math.min(st2.qIdx, STAGE2_QS.length - 1);
+  st2.coefs = { a:1, b:1, s:1, w:1 };
+  renderStage2();
+}
+function renderStage2() {
+  const q = STAGE2_QS[st2.qIdx];
+  document.getElementById('st2-q-counter').textContent = `問題 ${st2.qIdx+1} / ${STAGE2_QS.length}`;
+  document.getElementById('st2-prev-q').disabled = st2.qIdx === 0;
+  document.getElementById('st2-next-q').disabled = st2.qIdx === STAGE2_QS.length - 1;
+  document.getElementById('st2-feedback').className = 'feedback';
+  // 反応式（係数±UI）
+  const f = document.getElementById('st2-formula');
+  f.innerHTML =
+    coefTileHTML('a', st2.coefs.a, q.acid,   'acid') +
+    '<span class="formula-op">+</span>' +
+    coefTileHTML('b', st2.coefs.b, q.alkali, 'alkali') +
+    '<span class="formula-op">→</span>' +
+    coefTileHTML('s', st2.coefs.s, q.salt,   'salt') +
+    '<span class="formula-op">+</span>' +
+    coefTileHTML('w', st2.coefs.w, 'H2O',    'water');
+  // 各タイルの ±ボタンに event
+  f.querySelectorAll('.coef-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      const side = b.dataset.side;
+      const delta = parseInt(b.dataset.delta);
+      st2.coefs[side] = Math.max(1, Math.min(6, st2.coefs[side] + delta));
+      renderStage2();
+    });
+  });
+  // 原子数チェック
+  renderAtomCheck('st2-atom', st2.coefs, q);
+}
+function coefTileHTML(side, coef, compoundKey, cssClass) {
+  return `<span class="compound-tile ${cssClass}">
+    <button class="coef-btn" data-side="${side}" data-delta="-1" ${coef<=1?'disabled':''}>−</button>
+    <span class="coef">${coef}</span>
+    <span class="compound-name">${compoundHTML(compoundKey)}</span>
+    <button class="coef-btn" data-side="${side}" data-delta="1" ${coef>=6?'disabled':''}>＋</button>
+  </span>`;
+}
+function renderAtomCheck(id, coefs, q) {
+  const { left, right } = leftRightAtoms(coefs.a, q.acid, coefs.b, q.alkali, coefs.s, q.salt, coefs.w);
+  const keys = new Set([...Object.keys(left), ...Object.keys(right)]);
+  const sortedKeys = [...keys].sort();
+  function renderSide(side) {
+    return sortedKeys.map(k => {
+      const l = left[k] || 0, r = right[k] || 0;
+      const v = side === 'L' ? l : r;
+      if (v === 0) return '';
+      const cls = (l === r) ? 'match' : 'diff';
+      return `<span class="at ${cls}">${k}:${v}</span>`;
+    }).filter(Boolean).join('');
+  }
+  document.getElementById(id).innerHTML =
+    '<div class="side">' + renderSide('L') + '</div>' +
+    '<span class="arrow">↔</span>' +
+    '<div class="side">' + renderSide('R') + '</div>';
+}
+
+document.getElementById('st2-check').addEventListener('click', () => {
+  const q = STAGE2_QS[st2.qIdx];
+  const { left, right } = leftRightAtoms(st2.coefs.a, q.acid, st2.coefs.b, q.alkali, st2.coefs.s, q.salt, st2.coefs.w);
+  const minimal = isMinimal([st2.coefs.a, st2.coefs.b, st2.coefs.s, st2.coefs.w]);
+  if (atomsMatch(left, right) && minimal &&
+      st2.coefs.a === q.coefA && st2.coefs.b === q.coefB && st2.coefs.s === q.coefS && st2.coefs.w === q.coefW) {
+    showFb('st2-feedback', 'ok', '⭕ 正解！',
+      '反応式: ' + formulaHTML(q.coefA, q.acid, q.coefB, q.alkali, q.coefS, q.salt, q.coefW) +
+      (q.precip ? '<br>⚠️ <strong>BaSO₄ は白い沈殿</strong>として水溶液中に出てくる特殊な塩！' : ''));
+    SFX.fanfare();
+    if (st2.qIdx === STAGE2_QS.length - 1) markCleared(2);
+  } else if (atomsMatch(left, right) && !minimal) {
+    showFb('st2-feedback', 'ng', '❌ 係数が大きすぎ',
+      'すべての係数の最大公約数が1になる（最小整数比）まで小さくしよう。');
+    SFX.wrong();
+  } else {
+    showFb('st2-feedback', 'ng', '❌ 原子数が合わない',
+      '左右の原子数を一致させよう。<br>赤い ❌ の元素を見て、その元素を増やすために係数を変えてみて。');
+    SFX.wrong();
+  }
+});
+document.getElementById('st2-hint').addEventListener('click', () => {
+  const q = STAGE2_QS[st2.qIdx];
+  const acidH = COMPOUNDS[q.acid].atoms.H || 0;
+  const alkaliOH = COMPOUNDS[q.alkali].atoms.H || 0; // OH の H と同じ数
+  showFb('st2-feedback', 'ng', '💡 ヒント',
+    `酸 1つで H⁺ が ${acidH} 個、アルカリ 1つで OH⁻ が ${alkaliOH} 個。<br>これを等しい数にするには？`);
+});
+document.getElementById('st2-prev-q').addEventListener('click', () => {
+  if (st2.qIdx > 0) { st2.qIdx--; st2.coefs = {a:1,b:1,s:1,w:1}; renderStage2(); }
+});
+document.getElementById('st2-next-q').addEventListener('click', () => {
+  if (st2.qIdx < STAGE2_QS.length - 1) { st2.qIdx++; st2.coefs = {a:1,b:1,s:1,w:1}; renderStage2(); }
+});
+
+function showFb(id, kind, title, body) {
+  const fb = document.getElementById(id);
+  fb.className = 'feedback show ' + kind;
+  fb.innerHTML = '<strong>' + title + '</strong>' + body;
+}
+
+// ============================================================
+// STAGE 3 - 空欄埋め
+// ============================================================
+const SALT_OPTIONS = ['NaCl','BaCl2','CaCl2','Na2SO4','BaSO4','CaSO4','NaNO3','Ba(NO3)2','Ca(NO3)2'];
+let st3 = { qList:[], qIdx:0 };
+
+function shuffle(arr) { return arr.slice().sort(()=>Math.random()-0.5); }
+function initStage3() {
+  st3.qList = shuffle(REACTIONS).slice(0, 5);
+  st3.qIdx = 0;
+  renderStage3();
+}
+function renderStage3() {
+  const q = st3.qList[st3.qIdx];
+  document.getElementById('st3-q-counter').textContent = `問題 ${st3.qIdx+1} / ${st3.qList.length}`;
+  document.getElementById('st3-feedback').className = 'feedback';
+  document.getElementById('st3-hint-area').style.display = 'none';
+  // 選択肢: 正解 + ダミー3つ
+  const wrongs = SALT_OPTIONS.filter(s => s !== q.salt);
+  const opts = shuffle([q.salt, ...shuffle(wrongs).slice(0, 3)]);
+  const optsHTML = opts.map(s => `<option value="${s}">${compoundHTML(s).replace(/<[^>]+>/g, m => {
+    // visible text for option
+    return m.includes('sub') ? '' : m;
+  })}${COMPOUNDS[s].precip ? ' ⬇️(白沈)' : ''}</option>`).join('');
+  document.getElementById('st3-formula').innerHTML =
+    `<span>${q.coefA>1?q.coefA:''}${compoundHTML(q.acid)}</span>` +
+    `<span class="formula-op">+</span>` +
+    `<span>${q.coefB>1?q.coefB:''}${compoundHTML(q.alkali)}</span>` +
+    `<span class="formula-op">→</span>` +
+    `<select id="st3-salt-sel"><option value="">▼ 塩を選ぶ</option>${optsHTML}</select>` +
+    `<span class="formula-op">+</span>` +
+    `<select id="st3-water-sel"><option value="">▼ 水を選ぶ</option>
+      <option value="H2O">H₂O</option>
+      <option value="H2">H₂</option>
+      <option value="OH">OH</option>
+      <option value="O2">O₂</option>
+    </select>`;
+}
+
+document.getElementById('st3-check').addEventListener('click', () => {
+  const q = st3.qList[st3.qIdx];
+  const salt  = document.getElementById('st3-salt-sel').value;
+  const water = document.getElementById('st3-water-sel').value;
+  const ok = (salt === q.salt) && (water === 'H2O');
+  if (ok) {
+    document.getElementById('st3-salt-sel').classList.add('correct');
+    document.getElementById('st3-water-sel').classList.add('correct');
+    showFb('st3-feedback', 'ok', '⭕ 正解！',
+      '完成式: ' + formulaHTML(q.coefA, q.acid, q.coefB, q.alkali, q.coefS, q.salt, q.coefW) +
+      (q.precip ? '<br>⚠️ BaSO₄ は <strong>白い沈殿</strong>！' : ''));
+    SFX.correct();
+    if (st3.qIdx === st3.qList.length - 1) {
+      markCleared(3);
+      setTimeout(() => SFX.fanfare(), 400);
+    }
+    // 次の問題ボタンを追加
+    setTimeout(() => {
+      if (st3.qIdx < st3.qList.length - 1) {
+        st3.qIdx++;
+        renderStage3();
+      }
+    }, 1800);
+  } else {
+    if (salt && salt !== q.salt) document.getElementById('st3-salt-sel').classList.add('wrong');
+    if (water && water !== 'H2O') document.getElementById('st3-water-sel').classList.add('wrong');
+    showFb('st3-feedback', 'ng', '❌ もう一度',
+      'ヒントを見て、左辺をイオンに分けて考えてみよう。<br>陽イオン と 陰イオン の組み合わせで塩ができるよ。');
+    SFX.wrong();
+  }
+});
+document.getElementById('st3-hint').addEventListener('click', () => {
+  const q = st3.qList[st3.qIdx];
+  const ha = document.getElementById('st3-hint-area');
+  ha.style.display = 'block';
+  ha.innerHTML =
+    '<span class="step-label">左辺をイオンに分けると…</span>' +
+    '<div class="line">' +
+      (q.coefA>1?q.coefA:'') + compoundHTML(q.acid) + ' → ' + ionFormulaHTML(q.acid, q.coefA) +
+    '</div>' +
+    '<div class="line">' +
+      (q.coefB>1?q.coefB:'') + compoundHTML(q.alkali) + ' → ' + ionFormulaHTML(q.alkali, q.coefB) +
+    '</div>' +
+    '<div class="line" style="margin-top:6px;">残ったイオンを組み合わせて塩を作る！</div>';
+});
+
+// ============================================================
+// STAGE 4 - ファイナルチャレンジ
+// ============================================================
+let st4 = { qList:[], qIdx:0, scores:[], coefs:{a:1,b:1,s:1,w:1}, selectedSalt:'' };
+
+function initStage4() {
+  st4.qList = shuffle(REACTIONS).slice(0, 5);
+  st4.qIdx = 0;
+  st4.scores = [];
+  st4.coefs = { a:1, b:1, s:1, w:1 };
+  st4.selectedSalt = '';
+  renderStage4();
+}
+function renderStage4() {
+  const q = st4.qList[st4.qIdx];
+  document.getElementById('st4-q-counter').textContent = `${st4.qIdx+1} / ${st4.qList.length}`;
+  document.getElementById('st4-feedback').className = 'feedback';
+  // スコアバー
+  document.getElementById('st4-score').innerHTML =
+    st4.qList.map((_, i) => {
+      const cls = (i < st4.scores.length) ? (st4.scores[i] ? 'ok' : 'ng') : '';
+      return `<div class="score-dot ${cls}"></div>`;
+    }).join('');
+  // 反応式（係数±UI、塩は ? のまま）
+  const saltDisp = st4.selectedSalt || '<span style="color:#bbb;">？</span>';
+  document.getElementById('st4-formula').innerHTML =
+    coefTileHTML('a', st4.coefs.a, q.acid,   'acid') +
+    '<span class="formula-op">+</span>' +
+    coefTileHTML('b', st4.coefs.b, q.alkali, 'alkali') +
+    '<span class="formula-op">→</span>' +
+    `<span class="compound-tile salt">
+      <button class="coef-btn" data-side="s" data-delta="-1" ${st4.coefs.s<=1?'disabled':''}>−</button>
+      <span class="coef">${st4.coefs.s}</span>
+      <span class="compound-name">${st4.selectedSalt ? compoundHTML(st4.selectedSalt) : '<span style="color:#bbb;">？</span>'}</span>
+      <button class="coef-btn" data-side="s" data-delta="1" ${st4.coefs.s>=6?'disabled':''}>＋</button>
+    </span>` +
+    '<span class="formula-op">+</span>' +
+    coefTileHTML('w', st4.coefs.w, 'H2O',    'water');
+  document.getElementById('st4-formula').querySelectorAll('.coef-btn').forEach(b => {
+    b.addEventListener('click', () => {
+      const side = b.dataset.side;
+      const delta = parseInt(b.dataset.delta);
+      st4.coefs[side] = Math.max(1, Math.min(6, st4.coefs[side] + delta));
+      renderStage4();
+    });
+  });
+  // 塩の選択
+  const wrongs = SALT_OPTIONS.filter(s => s !== q.salt);
+  const opts = shuffle([q.salt, ...shuffle(wrongs).slice(0, 3)]);
+  document.getElementById('st4-salt-select').innerHTML =
+    `<label>塩を選ぶ:
+      <select id="st4-salt-sel">
+        <option value="">▼ 選択</option>
+        ${opts.map(s => `<option value="${s}" ${s===st4.selectedSalt?'selected':''}>${COMPOUNDS[s].ja||s}${COMPOUNDS[s].precip?' (白沈)':''}</option>`).join('')}
+      </select>
+    </label>`;
+  document.getElementById('st4-salt-sel').addEventListener('change', e => {
+    st4.selectedSalt = e.target.value;
+    renderStage4();
+  });
+  // 原子数チェック
+  if (st4.selectedSalt) {
+    renderAtomCheck('st4-atom', st4.coefs, { ...q, salt: st4.selectedSalt });
+  } else {
+    document.getElementById('st4-atom').innerHTML = '<span style="color:#999;font-size:12px;">塩を選ぶと原子数チェックが表示されるよ</span>';
+  }
+}
+
+document.getElementById('st4-check').addEventListener('click', () => {
+  const q = st4.qList[st4.qIdx];
+  const correct = (st4.selectedSalt === q.salt) &&
+                  (st4.coefs.a === q.coefA) && (st4.coefs.b === q.coefB) &&
+                  (st4.coefs.s === q.coefS) && (st4.coefs.w === q.coefW);
+  st4.scores.push(correct);
+  if (correct) {
+    showFb('st4-feedback', 'ok', '⭕ 正解！',
+      '完璧。反応式: ' + formulaHTML(q.coefA, q.acid, q.coefB, q.alkali, q.coefS, q.salt, q.coefW));
+    SFX.correct();
+  } else {
+    showFb('st4-feedback', 'ng', '❌ 不正解',
+      '正解: ' + formulaHTML(q.coefA, q.acid, q.coefB, q.alkali, q.coefS, q.salt, q.coefW));
+    SFX.wrong();
+  }
+  // 次へ or 終了
+  setTimeout(() => {
+    if (st4.qIdx < st4.qList.length - 1) {
+      st4.qIdx++;
+      st4.coefs = { a:1, b:1, s:1, w:1 };
+      st4.selectedSalt = '';
+      renderStage4();
+    } else {
+      finishStage4();
+    }
+  }, 1800);
+});
+document.getElementById('st4-restart').addEventListener('click', initStage4);
+
+function finishStage4() {
+  const score = st4.scores.filter(Boolean).length;
+  let title, body;
+  if (score === 5) {
+    title = '🎉 5/5 ぜんぶ正解！';
+    body = '<strong style="font-size:18px;color:#8C4A28;">中和マスター 👑 認定！</strong><br>9パターンの中和反応式を完全に組み立てられたね。';
+    confetti();
+    SFX.fanfare();
+    markCleared(4);
+    STATE.rank = Math.max(STATE.rank, 5); saveState(); updateRankBadge();
+  } else if (score >= 3) {
+    title = `🎯 ${score}/5 もう一息！`;
+    body = '惜しい！STAGE 2 か STAGE 3 で復習してから、もう一度チャレンジしてみよう。';
+    SFX.correct();
+  } else {
+    title = `📚 ${score}/5 復習しよう`;
+    body = 'STAGE 1 から振り返って、H⁺ と OH⁻ のペアづくりから確認しよう！';
+    SFX.wrong();
+  }
+  showFb('st4-feedback', score === 5 ? 'ok' : 'ng', title,
+    body + '<br><br>スコア: ' + st4.scores.map(s => s ? '⭕' : '❌').join(' '));
+  // スコアバー更新
+  document.getElementById('st4-score').innerHTML =
+    st4.scores.map(s => `<div class="score-dot ${s?'ok':'ng'}"></div>`).join('');
+}
+
+// ============================================================
+// 全体イベント
+// ============================================================
+document.querySelectorAll('[data-goto]').forEach(b => {
+  b.addEventListener('click', () => goto(parseInt(b.dataset.goto)));
+});
+document.querySelectorAll('.pdot').forEach(d => {
+  d.addEventListener('click', () => goto(parseInt(d.dataset.stage)));
+});
+document.getElementById('toggle-explainer').addEventListener('click', () => {
+  const o = document.getElementById('overlay-explainer');
+  const t = document.getElementById('toggle-explainer');
+  o.classList.toggle('show');
+  t.classList.toggle('active');
+});
+document.getElementById('overlay-close').addEventListener('click', () => {
+  document.getElementById('overlay-explainer').classList.remove('show');
+  document.getElementById('toggle-explainer').classList.remove('active');
+});
+
+// 初期化
+updateRankBadge();
+updateProgressNav();
+initStage0();
+
+</script>
+</body>
+</html>
