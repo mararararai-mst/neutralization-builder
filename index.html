@@ -1184,6 +1184,18 @@ function runDemoStep3() {
     else                  x = leftPad + (halfW / (total - 1)) * i - 18;
     return { x: Math.max(leftPad, x), y: 70 };
   }
+  // 残るイオン（H⁺ OH⁻ 以外）を右半分に整列移動（H2Oと重ならないように）
+  const remainingForLayout = stage0.centerIons.filter(p => p.type !== 'H+' && p.type !== 'OH-');
+  const rightStartX = cw / 2 + 8;
+  const rightW2 = cw - rightStartX - 18 - 36;
+  remainingForLayout.forEach((p, idx) => {
+    let rx2;
+    if (remainingForLayout.length === 1) rx2 = rightStartX + rightW2/2;
+    else rx2 = rightStartX + (rightW2 / (remainingForLayout.length - 1)) * idx;
+    p.el.style.left = rx2 + 'px';
+    p.el.style.top  = '70px';
+  });
+
   stage0.waters = [];
   for (let i = 0; i < pairCount; i++) {
     setTimeout(() => {
