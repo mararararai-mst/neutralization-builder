@@ -193,35 +193,52 @@ header.title .rank-badge {
 /* ビーカー */
 .beaker-stage {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   justify-content: center;
-  align-items: flex-end;
-  margin: 6px 0;
+  align-items: center;
+  margin: 4px 0;
   flex-wrap: wrap;
 }
-/* 3ビーカー横並び（STAGE 0用） */
-.beaker-stage.three { align-items: center; }
-.beaker-stage.three .mix-arrow {
+.beaker-stage .mix-arrow {
   font-size: 22px;
   color: #8C5A1A;
   font-weight: 800;
-  align-self: center;
-  padding: 0 4px;
+  padding: 0 2px;
 }
-/* STAGE 1 の横並び：ビーカー2つ + 生成物 */
-.row-beakers-products {
+.beaker-stage .products-wrap { flex: 0 0 180px; max-width: 200px; margin: 0; }
+.beaker-stage .products-zone { min-height: 110px; }
+/* メインレイアウト：ビーカーエリア（左）＋コントロール列（右） */
+.stage-main {
   display: flex;
   gap: 14px;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
-  flex-wrap: wrap;
-  margin: 6px 0;
+  margin: 4px 0;
 }
-.row-beakers-products .beaker-stage { margin: 0; }
-.row-beakers-products .products-wrap { margin: 0; flex: 0 0 200px; max-width: 220px; }
-.row-beakers-products .products-zone { min-height: 110px; }
+.stage-main .stage-left { flex: 1 1 auto; min-width: 0; }
+.stage-main .control-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: stretch;
+  flex: 0 0 160px;
+  max-width: 180px;
+}
+.stage-main .control-col .btn { width: 100%; padding: 7px 10px; font-size: 12.5px; }
+.stage-main .control-col .ctrl-label {
+  font-size: 11px;
+  color: #8a7a60;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+@media (max-width: 720px) {
+  .stage-main { flex-direction: column; }
+  .stage-main .control-col { flex: 1 1 auto; max-width: none; flex-direction: row; flex-wrap: wrap; }
+  .stage-main .control-col .btn { width: auto; flex: 1 1 auto; }
+}
 .beaker {
-  width: 220px;
+  width: 180px;
   height: 130px;
   background: linear-gradient(180deg, #FCFAEC 30%, #F5F1DC 100%);
   border: 3px solid #BFAE85;
@@ -232,7 +249,7 @@ header.title .rank-badge {
 }
 .beaker.acid    { background: linear-gradient(180deg, #FFF8F0 30%, #FFEEE0 100%); border-color: var(--acid); }
 .beaker.alkali  { background: linear-gradient(180deg, #F0F8FF 30%, #E0EEFE 100%); border-color: var(--alkali); }
-.beaker.center  { width: 280px; height: 160px; background: linear-gradient(180deg, #FFF9E0 30%, #FFF4C2 100%); border-color: var(--gold); }
+.beaker.center  { width: 220px; height: 130px; background: linear-gradient(180deg, #FFF9E0 30%, #FFF4C2 100%); border-color: var(--gold); }
 
 /* STAGE 1 生成物エリア（水と塩が横並びで残る） */
 .products-wrap {
@@ -628,8 +645,6 @@ sub, sup { font-size: 0.72em; }
         <option value="Ba(OH)2">Ba(OH)₂ 水酸化バリウム</option>
         <option value="Ca(OH)2">Ca(OH)₂ 水酸化カルシウム</option>
       </select></label>
-      <button class="btn primary" id="demo-start">▶ 観察スタート</button>
-      <button class="btn ghost sm" id="demo-reset">↻ リセット</button>
     </div>
 
     <div class="step-guide" id="demo-step-guide">
@@ -640,31 +655,37 @@ sub, sup { font-size: 0.72em; }
       <span class="sdot" data-step="5">⑤反応式</span>
     </div>
 
-    <div class="beaker-stage three" id="demo-stage">
-      <div class="beaker acid" id="demo-acid-beaker">
-        <span class="label" id="demo-acid-label">HCl</span>
+    <div class="stage-main">
+      <div class="stage-left">
+        <div class="beaker-stage">
+          <div class="beaker acid" id="demo-acid-beaker">
+            <span class="label" id="demo-acid-label">HCl</span>
+          </div>
+          <div class="beaker alkali" id="demo-alkali-beaker">
+            <span class="label" id="demo-alkali-label">NaOH</span>
+          </div>
+          <span class="mix-arrow" id="demo-arrow-left" style="opacity:0.25;">→</span>
+          <div class="beaker center" id="demo-center" style="opacity:0.35;">
+            <span class="label">塩 + 水</span>
+            <div class="precip-pool" id="demo-precip"></div>
+          </div>
+        </div>
+        <div class="precip-caption" id="demo-precip-caption" style="text-align:center;max-width:280px;margin:2px auto 0;">白い沈殿 (BaSO₄) が生じた！</div>
+        <input type="hidden" id="demo-mixed">
+        <div class="formula-display" id="demo-formula" style="min-height: 38px;">
+          <span class="step-label">▶ 観察スタートを押してね</span>
+        </div>
       </div>
-      <span class="mix-arrow" id="demo-arrow-left" style="opacity:0;">→</span>
-      <div class="beaker center" id="demo-center" style="opacity:0.35;">
-        <span class="label">混ぜたあと</span>
-        <div class="precip-pool" id="demo-precip"></div>
+      <div class="control-col">
+        <span class="ctrl-label">━ 操作 ━</span>
+        <button class="btn primary" id="demo-start">▶ 観察スタート</button>
+        <button class="btn primary" id="demo-next" style="display:none;">次のステップ →</button>
+        <button class="btn ghost" id="demo-reset">↻ リセット</button>
+        <div style="flex:1;"></div>
+        <span class="ctrl-label">━ 移動 ━</span>
+        <button class="btn" disabled>← 戻る</button>
+        <button class="btn primary" data-goto="1">組み立てる →</button>
       </div>
-      <span class="mix-arrow" id="demo-arrow-right" style="opacity:0;">←</span>
-      <div class="beaker alkali" id="demo-alkali-beaker">
-        <span class="label" id="demo-alkali-label">NaOH</span>
-      </div>
-    </div>
-    <div class="precip-caption" id="demo-precip-caption" style="text-align:center;max-width:280px;margin:2px auto 0;">白い沈殿 (BaSO₄) が生じた！</div>
-    <input type="hidden" id="demo-mixed">  <!-- 互換用ダミー -->
-
-    <div class="formula-display" id="demo-formula" style="min-height: 40px;">
-      <span class="step-label">▶ 観察スタートを押してね</span>
-    </div>
-
-    <div class="chapter-nav">
-      <button class="btn" disabled>← 戻る</button>
-      <button class="btn primary" id="demo-next" style="display:none;">次のステップ →</button>
-      <button class="btn primary" data-goto="1">次へ：自分で組み立てる →</button>
     </div>
   </section>
 
@@ -672,39 +693,41 @@ sub, sup { font-size: 0.72em; }
   <section class="chapter" id="ch-1">
     <h2>🤝 STAGE 1: 自分で組み立てる（9パターン）</h2>
     <p class="lead">
-      <b>① 電離スタート</b>でイオンを出す → <b>② H⁺と OH⁻ をクリックでペア化</b>（水ができる） → <b>③ 残ったイオンで塩を組み立てる</b>。
+      <b>① 電離スタート</b> → <b>② H⁺と OH⁻ をクリックでペア化</b>（水ができる） → <b>③ 残ったイオンで塩を組み立てる</b>。
     </p>
 
     <div class="problem-selector">
       <label>問題: <select id="st1-q-select"></select></label>
-      <button class="btn primary sm" id="st1-ionize-btn">⚡ 電離スタート</button>
-      <button class="btn ghost sm" id="st1-make-salt-btn" disabled>🧱 残ったイオンで塩を作る</button>
-      <button class="btn ghost sm" id="st1-reset-btn">↻ リセット</button>
     </div>
 
-    <div class="formula-display" id="st1-formula"></div>
-
-    <div class="row-beakers-products">
-      <div class="beaker-stage">
-        <div class="beaker acid" id="st1-acid">
-          <span class="label" id="st1-acid-label">HCl</span>
+    <div class="stage-main">
+      <div class="stage-left">
+        <div class="formula-display" id="st1-formula"></div>
+        <div class="beaker-stage">
+          <div class="beaker acid" id="st1-acid">
+            <span class="label" id="st1-acid-label">HCl</span>
+          </div>
+          <div class="beaker alkali" id="st1-alkali">
+            <span class="label" id="st1-alkali-label">NaOH</span>
+          </div>
+          <span class="mix-arrow">→</span>
+          <div class="products-wrap" style="margin:0;">
+            <span class="product-tag">🧪 生成物</span>
+            <div class="products-zone" id="st1-products"></div>
+          </div>
         </div>
-        <div class="beaker alkali" id="st1-alkali">
-          <span class="label" id="st1-alkali-label">NaOH</span>
-        </div>
+        <div class="feedback" id="st1-feedback"></div>
       </div>
-      <span class="mix-arrow">→</span>
-      <div class="products-wrap">
-        <span class="product-tag">🧪 生成物</span>
-        <div class="products-zone" id="st1-products"></div>
+      <div class="control-col">
+        <span class="ctrl-label">━ 操作 ━</span>
+        <button class="btn primary" id="st1-ionize-btn">⚡ 電離スタート</button>
+        <button class="btn primary" id="st1-make-salt-btn" disabled>🧱 残ったイオンで塩を作る</button>
+        <button class="btn ghost" id="st1-reset-btn">↻ リセット</button>
+        <div style="flex:1;"></div>
+        <span class="ctrl-label">━ 移動 ━</span>
+        <button class="btn" data-goto="0">← デモへ</button>
+        <button class="btn primary" data-goto="2">空欄埋め →</button>
       </div>
-    </div>
-
-    <div class="feedback" id="st1-feedback"></div>
-
-    <div class="chapter-nav">
-      <button class="btn" data-goto="0">← デモへ戻る</button>
-      <button class="btn primary" data-goto="2">次へ：空欄埋め →</button>
     </div>
   </section>
 
@@ -996,8 +1019,7 @@ function initStage0() {
   clearBeakerIons('demo-alkali-beaker');
   clearBeakerIons('demo-center');
   document.getElementById('demo-center').style.opacity = '0.35';
-  document.getElementById('demo-arrow-left').style.opacity = '0';
-  document.getElementById('demo-arrow-right').style.opacity = '0';
+  document.getElementById('demo-arrow-left').style.opacity = '0.25';
   document.getElementById('demo-precip').classList.remove('show');
   document.getElementById('demo-precip-caption').classList.remove('show');
   document.getElementById('demo-formula').innerHTML = '<span class="step-label">▶ 観察スタートを押してね</span>';
@@ -1072,8 +1094,6 @@ function runDemoStep2() {
   centerBeaker.style.opacity = '1';
   document.getElementById('demo-arrow-left').style.transition = 'opacity 0.4s';
   document.getElementById('demo-arrow-left').style.opacity = '1';
-  document.getElementById('demo-arrow-right').style.transition = 'opacity 0.4s';
-  document.getElementById('demo-arrow-right').style.opacity = '1';
   clearBeakerIons('demo-center');
   stage0.centerIons = [];
   const acidIons = COMPOUNDS[rx.acid].ions;
