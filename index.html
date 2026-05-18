@@ -1034,15 +1034,23 @@ function runDemoStep3() {
   const hps  = stage0.centerIons.filter(p => p.type === 'H+');
   const ohms = stage0.centerIons.filter(p => p.type === 'OH-');
   const pairCount = Math.min(hps.length, ohms.length);
+  // H₂O を中央ビーカーの上半分にきれいに並べる位置を計算（塩タイルと重ならない）
+  const waterCols = Math.min(3, Math.max(1, pairCount));
+  const waterPadX = 30;
+  const waterUsableW = center.clientWidth - waterPadX*2 - 36;
+  const waterRowH = 42;
+  function waterPos(i) {
+    const col = i % waterCols;
+    const row = Math.floor(i / waterCols);
+    const x = waterPadX + (waterCols > 1 ? (waterUsableW / (waterCols-1)) * col : waterUsableW/2);
+    const y = 20 + row * waterRowH;
+    return { x, y };
+  }
+  stage0.waters = [];
   for (let i = 0; i < pairCount; i++) {
     setTimeout(() => {
       const hEl = hps[i].el, oEl = ohms[i].el;
       flashAt(hEl); flashAt(oEl);
-      const hRect = hEl.getBoundingClientRect();
-      const oRect = oEl.getBoundingClientRect();
-      const cRect = center.getBoundingClientRect();
-      const mx = ((hRect.left + oRect.left) / 2 - cRect.left + 18);
-      const my = ((hRect.top  + oRect.top ) / 2 - cRect.top  + 18);
       hEl.style.opacity = '0'; oEl.style.opacity = '0';
       hEl.style.transform = 'scale(0.5)'; oEl.style.transform = 'scale(0.5)';
       hps[i].consumed = true; ohms[i].consumed = true;
@@ -1050,11 +1058,13 @@ function runDemoStep3() {
         const water = document.createElement('div');
         water.className = 'ion h2o';
         water.innerHTML = 'H₂O';
-        water.style.left = (mx - 18) + 'px';
-        water.style.top  = (my - 18) + 'px';
+        const pos = waterPos(i);
+        water.style.left = pos.x + 'px';
+        water.style.top  = pos.y + 'px';
         water.style.opacity = '0';
         water.style.transform = 'scale(0.5)';
         center.appendChild(water);
+        stage0.waters.push(water);
         setTimeout(() => {
           water.style.transition = 'opacity 0.3s, transform 0.3s';
           water.style.opacity = '1';
@@ -1071,55 +1081,62 @@ function runDemoStep3() {
 }
 
 function runDemoStep4() {
-  // 塩生成
+  // 塩生成（H₂Oを上半分に残し、塩は下半分に表示）
   stage0.step = 4;
   updateStepGuide(4);
   const rx = stage0.rx;
   const center = document.getElementById('demo-center');
   const remaining = stage0.centerIons.filter(p => !p.consumed);
-  const cRect = center.getBoundingClientRect();
-  let avgX = 0, avgY = 0;
-  remaining.forEach(p => {
-    const r = p.el.getBoundingClientRect();
-    avgX += r.left - cRect.left + 18;
-    avgY += r.top  - cRect.top  + 18;
-  });
-  if (remaining.length > 0) { avgX /= remaining.length; avgY /= remaining.length; }
+  // 残ったイオンをフェードアウト
   remaining.forEach(p => {
     flashAt(p.el);
     p.el.style.transition = 'opacity 0.3s, transform 0.3s';
     p.el.style.opacity = '0';
     p.el.style.transform = 'scale(0.5)';
   });
+  // 塩タイルは下半分に並べる
+  const saltCount = rx.coefS;
+  const saltCols = Math.min(3, Math.max(1, saltCount));
+  const saltPadX = 24;
+  const saltUsableW = center.clientWidth - saltPadX*2 - 56;
+  const saltBaseY = center.clientHeight - 60; // 下から60px
   setTimeout(() => {
-    const salt = document.createElement('div');
-    salt.className = rx.precip ? 'ion precip' : 'ion salt';
-    salt.innerHTML = compoundHTML(rx.salt);
-    salt.style.left = (avgX - 28) + 'px';
-    salt.style.top  = (avgY - 20) + 'px';
-    salt.style.opacity = '0';
-    salt.style.transform = 'scale(0.5)';
-    center.appendChild(salt);
-    setTimeout(() => {
-      salt.style.transition = 'opacity 0.3s, transform 0.4s';
-      salt.style.opacity = '1';
-      salt.style.transform = 'scale(1)';
-    }, 30);
+    for (let s = 0; s < saltCount; s++) {
+      const salt = document.createElement('div');
+      salt.className = rx.precip ? 'ion precip' : 'ion salt';
+      salt.innerHTML = compoundHTML(rx.salt);
+      const col = s % saltCols;
+      const x = saltPadX + (saltCols > 1 ? (saltUsableW / (saltCols-1)) * col : saltUsableW/2);
+      salt.style.left = x + 'px';
+      salt.style.top  = saltBaseY + 'px';
+      salt.style.opacity = '0';
+      salt.style.transform = 'scale(0.5)';
+      center.appendChild(salt);
+      setTimeout(() => {
+        salt.style.transition = 'opacity 0.3s, transform 0.4s, top 0.6s ease-in';
+        salt.style.opacity = '1';
+        salt.style.transform = 'scale(1)';
+      }, 30 + s * 120);
+      // 沈殿の場合は底へ沈む
+      if (rx.precip) {
+        setTimeout(() => {
+          salt.style.top = (center.clientHeight - 44) + 'px';
+        }, 400 + s * 120);
+      }
+    }
     SFX.correct();
     if (rx.precip) {
       setTimeout(() => {
-        salt.style.transition = 'top 0.7s ease-in';
-        salt.style.top = (center.clientHeight - 42) + 'px';
         document.getElementById('demo-precip').classList.add('show');
         document.getElementById('demo-precip-caption').classList.add('show');
-      }, 400);
+      }, 700);
     }
   }, 300);
   const remainingFormula = ionFormulaHTML(rx.acid, rx.coefA).split(' + ')[1] +
                             ' + ' +
                             ionFormulaHTML(rx.alkali, rx.coefB).split(' + ')[0];
   document.getElementById('demo-formula').innerHTML +=
-    '<span class="step-label" style="margin-top:6px;">④ 残ったイオンで塩ができる</span>' +
+    '<span class="step-label" style="margin-top:6px;">④ 残ったイオンで塩ができる（水はそのまま残る）</span>' +
     '<div class="line">' + remainingFormula + ' → ' + (rx.coefS>1?rx.coefS:'') + compoundHTML(rx.salt) +
     (rx.precip ? '<span style="color:#888;font-size:0.85em;"> ↓（白沈殿）</span>' : '') + '</div>';
   document.getElementById('demo-next').textContent = '次へ：反応式 →';
