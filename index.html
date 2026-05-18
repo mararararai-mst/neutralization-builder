@@ -1246,7 +1246,7 @@ function runDemoStep4() {
     for (let s = 0; s < saltCount; s++) {
       const salt = document.createElement('div');
       salt.className = rx.precip ? 'ion precip' : 'ion salt';
-      salt.innerHTML = compoundHTML(rx.salt);
+      salt.innerHTML = compoundPlain(rx.salt);
       salt.style.left = saltPosX(s) + 'px';
       salt.style.top  = '70px';   // H₂Oと同じ高さで横並び
       salt.style.opacity = '0';
@@ -1499,7 +1499,7 @@ document.getElementById('st1-make-salt-btn').addEventListener('click', () => {
     setTimeout(() => {
       const salt = document.createElement('div');
       salt.className = rx.precip ? 'ion precip' : 'ion salt';
-      salt.innerHTML = compoundHTML(rx.salt);
+      salt.innerHTML = compoundPlain(rx.salt);
       salt.style.opacity = '0';
       salt.style.transform = 'scale(0.5)';
       products.appendChild(salt);
