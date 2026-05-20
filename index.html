@@ -1905,8 +1905,8 @@ function coefSelectHTML(name, opts) {
 }
 function saltSelectHTML(opts) {
   return `<select class="compound" id="st2-salt">
-    <option value="">▼ 塩を選ぶ</option>
-    ${opts.map(s => `<option value="${s}">${COMPOUNDS[s].ja}${COMPOUNDS[s].precip?'(白沈)':''}</option>`).join('')}
+    <option value="">▼ 化学式を選ぶ</option>
+    ${opts.map(s => `<option value="${s}">${compoundPlain(s)}${COMPOUNDS[s].precip?' (白沈)':''}</option>`).join('')}
   </select>`;
 }
 function waterSelectHTML() {
@@ -2020,8 +2020,8 @@ function renderStage3() {
     '<span class="formula-op">→</span>' +
     coefSelectStHTML('3', 's', coefOpts) +
     `<select class="compound" id="st3-salt">
-      <option value="">▼ 塩を選ぶ</option>
-      ${saltOpts.map(s => `<option value="${s}">${COMPOUNDS[s].ja}${COMPOUNDS[s].precip?'(白沈)':''}</option>`).join('')}
+      <option value="">▼ 化学式を選ぶ</option>
+      ${saltOpts.map(s => `<option value="${s}">${compoundPlain(s)}${COMPOUNDS[s].precip?' (白沈)':''}</option>`).join('')}
     </select>` +
     '<span class="formula-op">+</span>' +
     coefSelectStHTML('3', 'w', coefOpts) +
