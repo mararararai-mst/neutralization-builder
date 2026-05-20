@@ -2104,11 +2104,16 @@ function showFb(id, kind, title, body) {
 // ============================================================
 // イベントバインド
 // ============================================================
+function parseStage(v) {
+  // 'A' などの文字ステージは文字列のまま、'0'-'9' は数値
+  const n = parseInt(v, 10);
+  return isNaN(n) ? v : n;
+}
 document.querySelectorAll('[data-goto]').forEach(b => {
-  b.addEventListener('click', () => goto(parseInt(b.dataset.goto)));
+  b.addEventListener('click', () => goto(parseStage(b.dataset.goto)));
 });
 document.querySelectorAll('.pdot').forEach(d => {
-  d.addEventListener('click', () => goto(parseInt(d.dataset.stage)));
+  d.addEventListener('click', () => goto(parseStage(d.dataset.stage)));
 });
 document.getElementById('toggle-explainer').addEventListener('click', () => {
   const o = document.getElementById('overlay-explainer');
