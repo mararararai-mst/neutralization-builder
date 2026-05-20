@@ -853,7 +853,7 @@ sub, sup { font-size: 0.72em; }
         <span class="ctrl-label">━ 操作 ━</span>
         <button class="btn primary" id="stA-check-btn">🔗 まとめて結合</button>
         <button class="btn ghost" id="stA-show-btn">👀 答えを見る</button>
-        <button class="btn ghost" id="stA-reset-btn">↻ リセット</button>
+        <button class="btn ghost" id="stA-reset-btn">↻ このステージをもう一度</button>
         <div style="flex:1;"></div>
         <span class="ctrl-label">━ 移動 ━</span>
         <button class="btn" disabled>← 戻る</button>
@@ -929,7 +929,7 @@ sub, sup { font-size: 0.72em; }
         <span class="ctrl-label">━ 操作 ━</span>
         <button class="btn primary" id="demo-start">▶ 観察スタート</button>
         <button class="btn primary" id="demo-next" style="display:none;">次のステップ →</button>
-        <button class="btn ghost" id="demo-reset">↻ リセット</button>
+        <button class="btn ghost" id="demo-reset">↻ このステージをもう一度</button>
         <div style="flex:1;"></div>
         <span class="ctrl-label">━ 移動 ━</span>
         <button class="btn" disabled>← 戻る</button>
@@ -971,7 +971,7 @@ sub, sup { font-size: 0.72em; }
         <span class="ctrl-label">━ 操作 ━</span>
         <button class="btn primary" id="st1-ionize-btn">⚡ 電離スタート</button>
         <button class="btn primary" id="st1-make-salt-btn" disabled>🧱 残ったイオンで塩を作る</button>
-        <button class="btn ghost" id="st1-reset-btn">↻ リセット</button>
+        <button class="btn ghost" id="st1-reset-btn">↻ このステージをもう一度</button>
         <div style="flex:1;"></div>
         <span class="ctrl-label">━ 移動 ━</span>
         <button class="btn" data-goto="0">← デモへ</button>
@@ -993,6 +993,7 @@ sub, sup { font-size: 0.72em; }
       <button class="btn ghost sm" id="st2-hint">💡 ヒント：イオンに分けて見る</button>
       <button class="btn primary" id="st2-check">✅ 答え合わせ</button>
       <button class="btn ghost sm" id="st2-next-q">次の問題 →</button>
+      <button class="btn ghost sm" id="st2-restart">↻ このステージをもう一度</button>
     </div>
 
     <div class="formula-display" id="st2-hint-area" style="display:none;"></div>
@@ -1019,6 +1020,7 @@ sub, sup { font-size: 0.72em; }
 
     <div class="box" style="text-align:center; padding:6px;">
       <button class="btn primary" id="st3-check">✅ 答え合わせ</button>
+      <button class="btn ghost sm" id="st3-redo">↻ このステージをもう一度</button>
     </div>
 
     <div class="feedback" id="st3-feedback"></div>
@@ -1026,7 +1028,7 @@ sub, sup { font-size: 0.72em; }
     <div class="chapter-nav">
       <button class="btn" data-goto="2">← 戻る</button>
       <span class="btn sm" style="cursor:default;box-shadow:none;" id="st3-q-counter">1 / 5</span>
-      <button class="btn ghost" id="st3-restart">↻ 最初から</button>
+      <button class="btn ghost" id="st3-restart" style="display:none;">↻ 最初から</button>
     </div>
   </section>
 
@@ -2039,6 +2041,11 @@ document.getElementById('st2-hint').addEventListener('click', () => {
   if (ha) ha.style.display = 'none';
 });
 
+document.getElementById('st2-restart').addEventListener('click', () => {
+  st2.qIdx = 0;
+  st2.qList = shuffle(REACTIONS).slice(0, 5);
+  renderStage2();
+});
 document.getElementById('st2-next-q').addEventListener('click', () => {
   if (st2.qIdx < st2.qList.length - 1) {
     st2.qIdx++;
@@ -2152,6 +2159,7 @@ function finishStage3() {
 }
 
 document.getElementById('st3-restart').addEventListener('click', initStage3);
+document.getElementById('st3-redo').addEventListener('click', initStage3);
 
 // ============================================================
 // 共通
