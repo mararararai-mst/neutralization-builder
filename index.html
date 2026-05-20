@@ -547,6 +547,33 @@ header.title .rank-badge {
 @keyframes pop-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes flash-anim { 0%{transform:scale(0.5);opacity:0;}30%{transform:scale(1.2);opacity:1;}100%{transform:scale(2.0);opacity:0;} }
 
+/* ===== 化合物タイル + イオンヒント（STAGE 2/3 で使用） ===== */
+.compound-with-hint {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+  gap: 2px;
+}
+.compound-with-hint .compound-tile-display {
+  padding: 3px 10px;
+  background: #FFF6E6;
+  border: 2px solid #BFAE85;
+  border-radius: 8px;
+  font-family: 'Kaisei Decol', serif;
+}
+.compound-with-hint .ions-hint {
+  font-size: 11px;
+  color: var(--accent2);
+  font-family: 'Kaisei Decol', serif;
+  font-weight: 700;
+  visibility: hidden;
+  white-space: nowrap;
+}
+.compound-with-hint.show-ions .ions-hint {
+  visibility: visible;
+}
+
 /* ===== STAGE A: イオン組合せ問題リスト ===== */
 .combine-table {
   display: grid;
@@ -1918,8 +1945,23 @@ function waterSelectHTML() {
     <option value="O2">O₂ 酸素</option>
   </select>`;
 }
+// イオンプレーンテキスト（上付き付き）
+const ION_PLAIN = {
+  'H+':'H⁺', 'OH-':'OH⁻',
+  'Na+':'Na⁺', 'Cl-':'Cl⁻',
+  'Ba2+':'Ba²⁺', 'Ca2+':'Ca²⁺',
+  'NO3-':'NO₃⁻', 'SO42-':'SO₄²⁻',
+};
+function compoundIonsPlain(key) {
+  const c = COMPOUNDS[key];
+  if (!c || !c.ions) return '';
+  return c.ions.map(i => `${i.n>1?i.n:''}${ION_PLAIN[i.type]||i.type}`).join(' + ');
+}
 function compoundDisplayHTML(key) {
-  return `<span style="padding:3px 10px;background:#FFF6E6;border:2px solid #BFAE85;border-radius:8px;">${compoundHTML(key)}</span>`;
+  return `<span class="compound-with-hint" data-compound="${key}">
+    <span class="compound-tile-display">${compoundHTML(key)}</span>
+    <span class="ions-hint">${compoundIonsPlain(key)}</span>
+  </span>`;
 }
 
 document.getElementById('st2-check').addEventListener('click', () => {
@@ -1968,14 +2010,11 @@ document.getElementById('st2-check').addEventListener('click', () => {
 });
 
 document.getElementById('st2-hint').addEventListener('click', () => {
-  const q = st2.qList[st2.qIdx];
+  // 各化合物タイルの下にイオン式を表示／非表示を切り替える
+  document.querySelectorAll('#st2-formula .compound-with-hint').forEach(el => el.classList.toggle('show-ions'));
+  // hint-area は使わないが念のため非表示維持
   const ha = document.getElementById('st2-hint-area');
-  ha.style.display = 'block';
-  ha.innerHTML =
-    '<span class="step-label">左辺をイオンに分けると…</span>' +
-    '<div class="line">' + (q.coefA>1?q.coefA:'') + compoundHTML(q.acid) + ' → ' + ionFormulaHTML(q.acid, q.coefA) + '</div>' +
-    '<div class="line">' + (q.coefB>1?q.coefB:'') + compoundHTML(q.alkali) + ' → ' + ionFormulaHTML(q.alkali, q.coefB) + '</div>' +
-    '<div class="line" style="margin-top:4px;font-size:0.9em;">H⁺ と OH⁻ が水になり、残ったイオンで塩を作る！</div>';
+  if (ha) ha.style.display = 'none';
 });
 
 document.getElementById('st2-next-q').addEventListener('click', () => {
