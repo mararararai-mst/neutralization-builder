@@ -1932,6 +1932,16 @@ function renderStage2() {
     '<span class="formula-op">+</span>' +
     coefSelectHTML('w', coefOpts) +
     waterSelectHTML();
+  // 係数select 変更 → ヒントのイオン個数を更新
+  const coefA = document.getElementById('st2-coef-a');
+  const coefB = document.getElementById('st2-coef-b');
+  const updHints = () => {
+    const wraps = document.querySelectorAll('#st2-formula .compound-with-hint');
+    if (wraps[0]) wraps[0].querySelector('.ions-hint').textContent = compoundIonsPlain(q.acid, parseInt(coefA.value));
+    if (wraps[1]) wraps[1].querySelector('.ions-hint').textContent = compoundIonsPlain(q.alkali, parseInt(coefB.value));
+  };
+  coefA.addEventListener('change', updHints);
+  coefB.addEventListener('change', updHints);
 }
 function coefSelectHTML(name, opts) {
   return `<select class="coef" id="st2-coef-${name}">${opts.map(n=>`<option value="${n}">${n}</option>`).join('')}</select>`;
@@ -1958,20 +1968,21 @@ const ION_PLAIN = {
   'Ba2+':'Ba²⁺', 'Ca2+':'Ca²⁺',
   'NO3-':'NO₃⁻', 'SO42-':'SO₄²⁻',
 };
-function compoundIonsPlain(key) {
-  // 個数分のイオンを並べて表示（例：H₂SO₄ → H⁺ + H⁺ + SO₄²⁻、Ca(OH)₂ → Ca²⁺ + OH⁻ + OH⁻）
+function compoundIonsPlain(key, coef = 1) {
+  // 係数 × 各イオン個数分のイオンを並べて表示
+  // 例：2HCl → H⁺ + H⁺ + Cl⁻ + Cl⁻、1Ca(OH)₂ → Ca²⁺ + OH⁻ + OH⁻
   const c = COMPOUNDS[key];
   if (!c || !c.ions) return '';
   const parts = [];
   c.ions.forEach(i => {
-    for (let k = 0; k < i.n; k++) parts.push(ION_PLAIN[i.type] || i.type);
+    for (let k = 0; k < i.n * coef; k++) parts.push(ION_PLAIN[i.type] || i.type);
   });
   return parts.join(' + ');
 }
 function compoundDisplayHTML(key) {
   return `<span class="compound-with-hint" data-compound="${key}">
     <span class="compound-tile-display">${compoundHTML(key)}</span>
-    <span class="ions-hint">${compoundIonsPlain(key)}</span>
+    <span class="ions-hint">${compoundIonsPlain(key, 1)}</span>
   </span>`;
 }
 
