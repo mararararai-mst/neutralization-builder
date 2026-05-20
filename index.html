@@ -550,12 +550,76 @@ header.title .rank-badge {
 /* ===== STAGE A: イオン組合せ問題リスト ===== */
 .combine-table {
   display: grid;
-  grid-template-columns: 1.4fr 1.4fr 0.4fr 1.6fr 0.4fr;
-  gap: 5px 8px;
+  grid-template-columns: 1.4fr 1.5fr 1.5fr 0.7fr 1.4fr;
+  gap: 5px 6px;
   align-items: center;
   font-family: 'Kaisei Decol', serif;
   font-size: 13px;
 }
+.ct-compound-name {
+  background: #FFF;
+  border: 1.5px solid var(--accent);
+  border-radius: 8px;
+  padding: 6px 8px;
+  text-align: center;
+  font-weight: 800;
+  color: #8C4A28;
+  font-family: 'Kaisei Decol', serif;
+  font-size: 13px;
+}
+.ct-ion-pair {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.ct-ion-pair select {
+  font-family: 'Kaisei Decol', serif;
+  font-size: 12.5px;
+  padding: 4px 4px;
+  border: 1.5px solid currentColor;
+  border-radius: 6px;
+  background: #fff;
+  text-align: center;
+  cursor: pointer;
+}
+.ct-ion-pair select.formula-sel { flex: 1; min-width: 0; }
+.ct-ion-pair select.count-sel { width: 44px; font-size: 13px; font-weight: 800; }
+.ct-ion-pair .times { font-weight: 700; color: #6a5a40; }
+.ct-ion-pair.anion { color: var(--ion-oh); }
+.ct-ion-pair.cation { color: #B07A20; }
+.combine-btn {
+  background: var(--accent);
+  color: #fff;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  padding: 6px 4px;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 1.5px 1.5px 0 #8C4A28;
+  letter-spacing: 0.02em;
+}
+.combine-btn:hover { transform: translate(-1px,-1px); box-shadow: 2.5px 2.5px 0 #8C4A28; }
+.combine-btn:active { transform: translate(1px,1px); box-shadow: 0.5px 0.5px 0 #8C4A28; }
+.ct-result {
+  background: #fff;
+  border: 1.5px solid #BFAE85;
+  border-radius: 8px;
+  padding: 5px 6px;
+  text-align: center;
+  min-height: 30px;
+  font-family: 'Kaisei Decol', serif;
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.ct-result.ok { background: #D7F0DC; border-color: #2E7D32; color: #1B5E20; }
+.ct-result.ng { background: #FFE2D6; border-color: #D9533C; color: #8C2A1A; }
+.ct-result.empty { color: #aaa; }
 .combine-table .ct-head {
   font-family: 'M PLUS Rounded 1c', sans-serif;
   font-size: 11px;
@@ -726,19 +790,19 @@ sub, sup { font-size: 0.72em; }
   <section class="chapter active" id="ch-A">
     <h2>🧪 STAGE A: イオンを組み合わせて化合物を作る</h2>
     <p class="lead">
-      陰イオン と 陽イオン を組み合わせると、化合物（塩 など）ができる。
-      <b>化学式 or 化合物名</b>を書こう（例：<code>Na₂SO₄</code> または <code>硫酸ナトリウム</code>）。
+      左の <b>化合物名</b> を見て、<b>陰イオン式 × 個数</b> と <b>陽イオン式 × 個数</b> を選んで <b>🔗 結合</b> を押そう。<br>
+      正解なら化学式が出るよ（例：硫酸ナトリウム = SO₄²⁻×1 + Na⁺×2 → Na₂SO₄）。
     </p>
 
     <div class="stage-main">
       <div class="stage-left">
         <div class="combine-table" id="combine-table"></div>
-        <div class="combine-progress" id="combine-progress">残り <span class="filled" id="ct-remaining">13</span> 問</div>
+        <div class="combine-progress" id="combine-progress" style="display:none;">残り <span class="filled" id="ct-remaining">14</span> 問</div>
         <div class="feedback" id="stA-feedback"></div>
       </div>
       <div class="control-col">
         <span class="ctrl-label">━ 操作 ━</span>
-        <button class="btn primary" id="stA-check-btn">✅ 答え合わせ</button>
+        <button class="btn primary" id="stA-check-btn">🔗 まとめて結合</button>
         <button class="btn ghost" id="stA-show-btn">👀 答えを見る</button>
         <button class="btn ghost" id="stA-reset-btn">↻ リセット</button>
         <div style="flex:1;"></div>
@@ -1165,54 +1229,47 @@ function flashAt(el) {
 const ANION_OPTIONS  = ['SO₄²⁻', 'OH⁻', 'CO₃²⁻'];
 const CATION_OPTIONS = ['Na⁺', 'Ca²⁺', 'Cu²⁺', 'H⁺', 'Zn²⁺', 'Mg²⁺', 'Ba²⁺'];
 
+// 各問: 化合物名 = 陰イオン式 × N + 陽イオン式 × N
+// 例: 硫酸ナトリウム Na₂SO₄ = SO₄²⁻ × 1 + Na⁺ × 2
 const STAGE_A_QS = [
-  { anion:'硫酸イオン',    anionF:'SO₄²⁻', cation:'ナトリウムイオン',   cationF:'Na⁺',  formulas:['Na2SO4','Na₂SO₄'], names:['硫酸ナトリウム'] },
-  { anion:'硫酸イオン',    anionF:'SO₄²⁻', cation:'カルシウムイオン',   cationF:'Ca²⁺', formulas:['CaSO4','CaSO₄'], names:['硫酸カルシウム'] },
-  { anion:'硫酸イオン',    anionF:'SO₄²⁻', cation:'銅イオン',         cationF:'Cu²⁺', formulas:['CuSO4','CuSO₄'], names:['硫酸銅'] },
-  { anion:'硫酸イオン',    anionF:'SO₄²⁻', cation:'水素イオン',       cationF:'H⁺',   formulas:['H2SO4','H₂SO₄'], names:['硫酸'] },
-  { anion:'硫酸イオン',    anionF:'SO₄²⁻', cation:'亜鉛イオン',       cationF:'Zn²⁺', formulas:['ZnSO4','ZnSO₄'], names:['硫酸亜鉛'] },
-  { anion:'硫酸イオン',    anionF:'SO₄²⁻', cation:'マグネシウムイオン', cationF:'Mg²⁺', formulas:['MgSO4','MgSO₄'], names:['硫酸マグネシウム'] },
-  { anion:'硫酸イオン',    anionF:'SO₄²⁻', cation:'バリウムイオン',   cationF:'Ba²⁺', formulas:['BaSO4','BaSO₄'], names:['硫酸バリウム'] },
-  { anion:'水酸化物イオン', anionF:'OH⁻',  cation:'ナトリウムイオン',   cationF:'Na⁺',  formulas:['NaOH'], names:['水酸化ナトリウム'] },
-  { anion:'水酸化物イオン', anionF:'OH⁻',  cation:'カルシウムイオン',   cationF:'Ca²⁺', formulas:['Ca(OH)2','Ca(OH)₂'], names:['水酸化カルシウム'] },
-  { anion:'水酸化物イオン', anionF:'OH⁻',  cation:'バリウムイオン',   cationF:'Ba²⁺', formulas:['Ba(OH)2','Ba(OH)₂'], names:['水酸化バリウム'] },
-  { anion:'炭酸イオン',    anionF:'CO₃²⁻', cation:'ナトリウムイオン',   cationF:'Na⁺',  formulas:['Na2CO3','Na₂CO₃'], names:['炭酸ナトリウム'] },
-  { anion:'炭酸イオン',    anionF:'CO₃²⁻', cation:'マグネシウムイオン', cationF:'Mg²⁺', formulas:['MgCO3','MgCO₃'], names:['炭酸マグネシウム'] },
-  { anion:'炭酸イオン',    anionF:'CO₃²⁻', cation:'バリウムイオン',   cationF:'Ba²⁺', formulas:['BaCO3','BaCO₃'], names:['炭酸バリウム'] },
-  { anion:'炭酸イオン',    anionF:'CO₃²⁻', cation:'水素イオン',       cationF:'H⁺',   formulas:['H2CO3','H₂CO₃'], names:['炭酸'] },
+  { name:'硫酸ナトリウム',     formula:'Na₂SO₄',   anionF:'SO₄²⁻', anionN:1, cationF:'Na⁺',  cationN:2 },
+  { name:'硫酸カルシウム',     formula:'CaSO₄',    anionF:'SO₄²⁻', anionN:1, cationF:'Ca²⁺', cationN:1 },
+  { name:'硫酸銅',           formula:'CuSO₄',    anionF:'SO₄²⁻', anionN:1, cationF:'Cu²⁺', cationN:1 },
+  { name:'硫酸（H₂SO₄）',     formula:'H₂SO₄',    anionF:'SO₄²⁻', anionN:1, cationF:'H⁺',   cationN:2 },
+  { name:'硫酸亜鉛',          formula:'ZnSO₄',    anionF:'SO₄²⁻', anionN:1, cationF:'Zn²⁺', cationN:1 },
+  { name:'硫酸マグネシウム',   formula:'MgSO₄',    anionF:'SO₄²⁻', anionN:1, cationF:'Mg²⁺', cationN:1 },
+  { name:'硫酸バリウム',       formula:'BaSO₄',    anionF:'SO₄²⁻', anionN:1, cationF:'Ba²⁺', cationN:1 },
+  { name:'水酸化ナトリウム',   formula:'NaOH',     anionF:'OH⁻',  anionN:1, cationF:'Na⁺',  cationN:1 },
+  { name:'水酸化カルシウム',   formula:'Ca(OH)₂',  anionF:'OH⁻',  anionN:2, cationF:'Ca²⁺', cationN:1 },
+  { name:'水酸化バリウム',     formula:'Ba(OH)₂',  anionF:'OH⁻',  anionN:2, cationF:'Ba²⁺', cationN:1 },
+  { name:'炭酸ナトリウム',     formula:'Na₂CO₃',   anionF:'CO₃²⁻', anionN:1, cationF:'Na⁺',  cationN:2 },
+  { name:'炭酸マグネシウム',   formula:'MgCO₃',    anionF:'CO₃²⁻', anionN:1, cationF:'Mg²⁺', cationN:1 },
+  { name:'炭酸バリウム',       formula:'BaCO₃',    anionF:'CO₃²⁻', anionN:1, cationF:'Ba²⁺', cationN:1 },
+  { name:'炭酸（H₂CO₃）',     formula:'H₂CO₃',    anionF:'CO₃²⁻', anionN:1, cationF:'H⁺',   cationN:2 },
 ];
 
-// 化学式 / 名前 を正規化（添字統一・空白除去）
-function normalizeAns(s) {
-  return s
-    .replace(/[₀-₉]/g, ch => String.fromCharCode(48 + ch.charCodeAt(0) - 0x2080))
-    .replace(/\s+/g, '')
-    .replace(/[（]/g, '(').replace(/[）]/g, ')')
-    .trim();
-}
-function isStageAAnswer(userInput, q) {
-  if (!userInput) return false;
-  const u = normalizeAns(userInput);
-  const candidates = [...q.formulas, ...q.names].map(normalizeAns);
-  return candidates.includes(u);
-}
-
-function makeIonCell(side, idx, name) {
-  // 陰/陽 のセル：名前 + その下のドロップダウン（イオン式）
+function makeIonPairCell(side, idx, options) {
+  // 陰/陽 のセル：イオン式 select × 個数 select
   const cell = document.createElement('div');
-  cell.className = 'ct-ion ' + (side === 'anion' ? 'ct-anion' : 'ct-cation');
-  const nameDiv = document.createElement('div');
-  nameDiv.className = 'ion-name';
-  nameDiv.textContent = name;
-  cell.appendChild(nameDiv);
-  // ドロップダウン
-  const sel = document.createElement('select');
-  sel.dataset.idx = idx;
-  sel.dataset.side = side;
-  sel.innerHTML = '<option value="">▼ イオン式</option>' +
-    (side === 'anion' ? ANION_OPTIONS : CATION_OPTIONS)
-      .map(s => `<option value="${s}">${s}</option>`).join('');
-  cell.appendChild(sel);
+  cell.className = 'ct-ion-pair ' + side;
+  const fSel = document.createElement('select');
+  fSel.className = 'formula-sel';
+  fSel.dataset.idx = idx;
+  fSel.dataset.side = side;
+  fSel.innerHTML = '<option value="">▼ イオン式</option>' +
+    options.map(s => `<option value="${s}">${s}</option>`).join('');
+  const times = document.createElement('span');
+  times.className = 'times';
+  times.textContent = '×';
+  const cSel = document.createElement('select');
+  cSel.className = 'count-sel';
+  cSel.dataset.idx = idx;
+  cSel.dataset.side = side;
+  cSel.innerHTML = '<option value="">▼</option>' +
+    [1,2,3].map(n => `<option value="${n}">${n}</option>`).join('');
+  cell.appendChild(fSel);
+  cell.appendChild(times);
+  cell.appendChild(cSel);
   return cell;
 }
 
@@ -1220,26 +1277,33 @@ function initStageA() {
   const tbl = document.getElementById('combine-table');
   tbl.innerHTML = '';
   // ヘッダ行
-  tbl.appendChild(makeHeadDiv('陰イオン（式を選ぶ）'));
-  tbl.appendChild(makeHeadDiv('陽イオン（式を選ぶ）'));
+  tbl.appendChild(makeHeadDiv('化合物名'));
+  tbl.appendChild(makeHeadDiv('陰イオン × 個数'));
+  tbl.appendChild(makeHeadDiv('陽イオン × 個数'));
   tbl.appendChild(makeHeadDiv(''));
-  tbl.appendChild(makeHeadDiv('化合物（化学式 or 名前）'));
-  tbl.appendChild(makeHeadDiv('判定'));
+  tbl.appendChild(makeHeadDiv('化学式'));
   // データ行
   STAGE_A_QS.forEach((q, i) => {
-    tbl.appendChild(makeIonCell('anion', i, q.anion));
-    tbl.appendChild(makeIonCell('cation', i, q.cation));
-    const arrow = document.createElement('div'); arrow.className = 'ct-arrow'; arrow.textContent = '→';
-    const inp = document.createElement('input');
-    inp.type = 'text';
-    inp.className = 'ct-answer';
-    inp.dataset.idx = i;
-    inp.placeholder = '化学式 or 名前';
-    inp.addEventListener('input', updateStageARemaining);
-    const mark = document.createElement('div'); mark.className = 'ct-mark'; mark.dataset.idx = i;
-    tbl.appendChild(arrow); tbl.appendChild(inp); tbl.appendChild(mark);
+    const cn = document.createElement('div');
+    cn.className = 'ct-compound-name';
+    cn.textContent = q.name;
+    tbl.appendChild(cn);
+    tbl.appendChild(makeIonPairCell('anion', i, ANION_OPTIONS));
+    tbl.appendChild(makeIonPairCell('cation', i, CATION_OPTIONS));
+    const btn = document.createElement('button');
+    btn.className = 'combine-btn';
+    btn.dataset.idx = i;
+    btn.textContent = '🔗 結合';
+    btn.addEventListener('click', () => combineStageA(i));
+    tbl.appendChild(btn);
+    const res = document.createElement('div');
+    res.className = 'ct-result empty';
+    res.dataset.idx = i;
+    res.textContent = '?';
+    tbl.appendChild(res);
   });
-  updateStageARemaining();
+  // 残り問題数表示は削除（個別判定なので）
+  const rem = document.getElementById('ct-remaining'); if (rem) rem.parentElement.style.display = 'none';
   document.getElementById('stA-feedback').className = 'feedback';
 }
 function makeHeadDiv(text) {
@@ -1248,69 +1312,52 @@ function makeHeadDiv(text) {
   d.textContent = text;
   return d;
 }
-function updateStageARemaining() {
-  const inputs = document.querySelectorAll('#combine-table input.ct-answer');
-  const filled = [...inputs].filter(i => i.value.trim().length > 0).length;
-  const remaining = STAGE_A_QS.length - filled;
-  const el = document.getElementById('ct-remaining');
-  if (el) el.textContent = remaining;
+
+function combineStageA(i) {
+  const q = STAGE_A_QS[i];
+  const anF = document.querySelector('#combine-table select.formula-sel[data-side="anion"][data-idx="' + i + '"]').value;
+  const anN = document.querySelector('#combine-table select.count-sel[data-side="anion"][data-idx="' + i + '"]').value;
+  const caF = document.querySelector('#combine-table select.formula-sel[data-side="cation"][data-idx="' + i + '"]').value;
+  const caN = document.querySelector('#combine-table select.count-sel[data-side="cation"][data-idx="' + i + '"]').value;
+  const res = document.querySelector('#combine-table .ct-result[data-idx="' + i + '"]');
+  if (!anF || !anN || !caF || !caN) {
+    res.className = 'ct-result ng';
+    res.textContent = '✗ 4つ全部選んでね';
+    SFX.wrong?.();
+    return;
+  }
+  const anOk = anF === q.anionF && parseInt(anN) === q.anionN;
+  const caOk = caF === q.cationF && parseInt(caN) === q.cationN;
+  if (anOk && caOk) {
+    res.className = 'ct-result ok';
+    res.innerHTML = '◯ <span style="font-family:Kaisei Decol,serif;">' + q.formula + '</span>';
+    SFX.correct?.();
+  } else {
+    res.className = 'ct-result ng';
+    let hint = '';
+    if (!anOk && !caOk) hint = '陰・陽 とも見直し';
+    else if (!anOk) hint = '陰イオンの式 or 個数';
+    else hint = '陽イオンの式 or 個数';
+    res.textContent = '✗ ' + hint;
+    SFX.wrong?.();
+  }
 }
 
 document.addEventListener('click', e => {
-  if (e.target.id === 'stA-check-btn') {
-    let fullCorrect = 0;
+  if (e.target.id === 'stA-show-btn') {
+    // 全行を答えで埋めて結合
     STAGE_A_QS.forEach((q, i) => {
-      const inp = document.querySelector('#combine-table input.ct-answer[data-idx="' + i + '"]');
-      const anSel = document.querySelector('#combine-table select[data-side="anion"][data-idx="' + i + '"]');
-      const caSel = document.querySelector('#combine-table select[data-side="cation"][data-idx="' + i + '"]');
-      const mark = document.querySelector('#combine-table .ct-mark[data-idx="' + i + '"]');
-      // 陰イオン式判定
-      const anOk = anSel.value === q.anionF;
-      anSel.classList.toggle('ok', anOk && anSel.value !== '');
-      anSel.classList.toggle('ng', !anOk && anSel.value !== '');
-      // 陽イオン式判定
-      const caOk = caSel.value === q.cationF;
-      caSel.classList.toggle('ok', caOk && caSel.value !== '');
-      caSel.classList.toggle('ng', !caOk && caSel.value !== '');
-      // 化合物判定
-      const cmpOk = isStageAAnswer(inp.value, q);
-      inp.classList.toggle('ok', cmpOk);
-      inp.classList.toggle('ng', !cmpOk && inp.value.trim().length > 0);
-      // 全部正解？
-      const allOk = anOk && caOk && cmpOk;
-      if (allOk) {
-        mark.className = 'ct-mark ok'; mark.textContent = '◯';
-        fullCorrect++;
-      } else if (anSel.value || caSel.value || inp.value.trim().length > 0) {
-        mark.className = 'ct-mark ng'; mark.textContent = '✗';
-      } else {
-        mark.className = 'ct-mark'; mark.textContent = '';
-      }
+      document.querySelector('#combine-table select.formula-sel[data-side="anion"][data-idx="' + i + '"]').value = q.anionF;
+      document.querySelector('#combine-table select.count-sel[data-side="anion"][data-idx="' + i + '"]').value = q.anionN;
+      document.querySelector('#combine-table select.formula-sel[data-side="cation"][data-idx="' + i + '"]').value = q.cationF;
+      document.querySelector('#combine-table select.count-sel[data-side="cation"][data-idx="' + i + '"]').value = q.cationN;
+      combineStageA(i);
     });
-    const fb = document.getElementById('stA-feedback');
-    if (fullCorrect === STAGE_A_QS.length) {
-      fb.className = 'feedback show ok';
-      fb.innerHTML = '<strong>🎉 全問正解！</strong>イオン式 ↔ 名前 ↔ 化合物の対応がつかめたね。次は STAGE 0 のデモへ。';
-      SFX.fanfare?.();
-    } else {
-      fb.className = 'feedback show ng';
-      fb.innerHTML = '<strong>全部そろった: ' + fullCorrect + ' / ' + STAGE_A_QS.length + '</strong>1行3つ（陰イオン式・陽イオン式・化合物）が全部合うと◯になるよ。';
-      SFX.wrong?.();
-    }
-  } else if (e.target.id === 'stA-show-btn') {
-    STAGE_A_QS.forEach((q, i) => {
-      const inp = document.querySelector('#combine-table input.ct-answer[data-idx="' + i + '"]');
-      const anSel = document.querySelector('#combine-table select[data-side="anion"][data-idx="' + i + '"]');
-      const caSel = document.querySelector('#combine-table select[data-side="cation"][data-idx="' + i + '"]');
-      const mark = document.querySelector('#combine-table .ct-mark[data-idx="' + i + '"]');
-      anSel.value = q.anionF; anSel.classList.remove('ng'); anSel.classList.add('ok');
-      caSel.value = q.cationF; caSel.classList.remove('ng'); caSel.classList.add('ok');
-      inp.value = q.names[0]; inp.classList.remove('ng'); inp.classList.add('ok');
-      if (mark) { mark.className = 'ct-mark ok'; mark.textContent = '◯'; }
-    });
-    updateStageARemaining();
   } else if (e.target.id === 'stA-reset-btn') {
     initStageA();
+  } else if (e.target.id === 'stA-check-btn') {
+    // 全行を一括結合
+    STAGE_A_QS.forEach((q, i) => combineStageA(i));
   }
 });
 
