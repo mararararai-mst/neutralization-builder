@@ -585,8 +585,22 @@ header.title .rank-badge {
 .ct-ion-pair select.formula-sel { flex: 1; min-width: 0; }
 .ct-ion-pair select.count-sel { width: 42px; font-size: 12.5px; font-weight: 800; }
 .ct-ion-pair .times { font-weight: 700; color: #6a5a40; }
-.ct-ion-pair.anion { color: var(--ion-oh); }
-.ct-ion-pair.cation { color: #B07A20; }
+
+/* 陰イオン（青系） */
+.ct-ion-pair.anion { color: #2A6080; }
+.ct-ion-pair.anion select { background: #E8F2FB; border-color: #5FA8D8; color: #1A5080; font-weight: 700; }
+.ct-ion-pair.anion select.formula-sel:not(:invalid) { background: #D5E8F8; }
+.ct-ion-pair.anion select option { background: #fff; color: #1A5080; }
+
+/* 陽イオン（橙系） */
+.ct-ion-pair.cation { color: #8C5A1A; }
+.ct-ion-pair.cation select { background: #FFF1DC; border-color: #E8A040; color: #7A4810; font-weight: 700; }
+.ct-ion-pair.cation select.formula-sel:not(:invalid) { background: #FFE4C4; }
+.ct-ion-pair.cation select option { background: #fff; color: #7A4810; }
+
+/* 答え合わせの ok / ng 色は keep */
+.ct-ion-pair select.ok { background: #D7F0DC !important; border-color: #2E7D32 !important; color: #1B5E20 !important; }
+.ct-ion-pair select.ng { background: #FFE2D6 !important; border-color: #D9533C !important; color: #8C2A1A !important; }
 .combine-btn {
   background: var(--accent);
   color: #fff;
@@ -631,6 +645,8 @@ header.title .rank-badge {
   padding: 4px 8px;
   text-align: center;
 }
+.combine-table .ct-head.head-anion  { background: #D5E8F8; border-color: #5FA8D8; color: #1A5080; }
+.combine-table .ct-head.head-cation { background: #FFE4C4; border-color: #E8A040; color: #7A4810; }
 .combine-table .ct-ion {
   background: #FFFBF0;
   border: 1.5px solid #BFAE85;
@@ -1278,8 +1294,8 @@ function initStageA() {
   tbl.innerHTML = '';
   // ヘッダ行
   tbl.appendChild(makeHeadDiv('化合物名'));
-  tbl.appendChild(makeHeadDiv('陰イオン × 個数'));
-  tbl.appendChild(makeHeadDiv('陽イオン × 個数'));
+  tbl.appendChild(makeHeadDiv('陰イオン × 個数', 'head-anion'));
+  tbl.appendChild(makeHeadDiv('陽イオン × 個数', 'head-cation'));
   tbl.appendChild(makeHeadDiv(''));
   tbl.appendChild(makeHeadDiv('化学式'));
   // データ行
@@ -1306,9 +1322,9 @@ function initStageA() {
   const rem = document.getElementById('ct-remaining'); if (rem) rem.parentElement.style.display = 'none';
   document.getElementById('stA-feedback').className = 'feedback';
 }
-function makeHeadDiv(text) {
+function makeHeadDiv(text, extraClass) {
   const d = document.createElement('div');
-  d.className = 'ct-head';
+  d.className = 'ct-head' + (extraClass ? ' ' + extraClass : '');
   d.textContent = text;
   return d;
 }
