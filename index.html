@@ -547,6 +547,62 @@ header.title .rank-badge {
 @keyframes pop-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes flash-anim { 0%{transform:scale(0.5);opacity:0;}30%{transform:scale(1.2);opacity:1;}100%{transform:scale(2.0);opacity:0;} }
 
+/* ===== STAGE A: イオン組合せ問題リスト ===== */
+.combine-table {
+  display: grid;
+  grid-template-columns: 1.4fr 1.4fr 0.4fr 1.6fr 0.4fr;
+  gap: 5px 8px;
+  align-items: center;
+  font-family: 'Kaisei Decol', serif;
+  font-size: 13px;
+}
+.combine-table .ct-head {
+  font-family: 'M PLUS Rounded 1c', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: #6a5a40;
+  background: #FFF4D6;
+  border: 1px solid #BFAE85;
+  border-radius: 6px;
+  padding: 4px 8px;
+  text-align: center;
+}
+.combine-table .ct-ion {
+  background: #FFFBF0;
+  border: 1.5px solid #BFAE85;
+  border-radius: 8px;
+  padding: 5px 8px;
+  text-align: center;
+  font-weight: 700;
+  color: #5a4a30;
+}
+.combine-table .ct-anion { border-color: var(--ion-oh); color: #2A6080; background:#F0F8FE; }
+.combine-table .ct-cation { border-color: var(--ion-na); color: #6A4810; background:#FFF8E8; }
+.combine-table .ct-arrow { text-align: center; font-weight: 800; color: #8C5A1A; font-size: 16px; }
+.combine-table input.ct-answer {
+  font-family: 'Kaisei Decol', serif;
+  font-size: 14px;
+  padding: 5px 8px;
+  border: 1.5px solid #BFAE85;
+  border-radius: 7px;
+  background: #FFF;
+  width: 100%;
+  text-align: center;
+}
+.combine-table input.ct-answer.ok    { background: #D7F0DC; border-color: #2E7D32; }
+.combine-table input.ct-answer.ng    { background: #FFE2D6; border-color: #D9533C; }
+.combine-table .ct-mark { font-size: 16px; font-weight: 800; text-align: center; }
+.combine-table .ct-mark.ok { color: #2E7D32; }
+.combine-table .ct-mark.ng { color: #D9533C; }
+.combine-progress {
+  text-align: center;
+  margin-top: 6px;
+  font-size: 12px;
+  color: #6a5a40;
+  font-weight: 700;
+}
+.combine-progress .filled { color: #8C4A28; }
+
 /* オーバーレイ */
 .explainer-toggles {
   display: flex;
@@ -642,14 +698,42 @@ sub, sup { font-size: 0.72em; }
   </div>
 
   <div class="progress-nav" id="progress-nav">
-    <button class="pdot active" data-stage="0"><span class="stnum">0</span>デモ</button>
+    <button class="pdot active" data-stage="A"><span class="stnum">A</span>イオン組合せ</button>
+    <button class="pdot" data-stage="0"><span class="stnum">0</span>デモ</button>
     <button class="pdot" data-stage="1"><span class="stnum">1</span>自分で組み立て</button>
     <button class="pdot" data-stage="2"><span class="stnum">2</span>空欄埋め</button>
     <button class="pdot" data-stage="3"><span class="stnum">3</span>ファイナル</button>
   </div>
 
+  <!-- ===== STAGE A: イオンの組み合わせから化合物 ===== -->
+  <section class="chapter active" id="ch-A">
+    <h2>🧪 STAGE A: イオンを組み合わせて化合物を作る</h2>
+    <p class="lead">
+      陰イオン と 陽イオン を組み合わせると、化合物（塩 など）ができる。
+      <b>化学式 or 化合物名</b>を書こう（例：<code>Na₂SO₄</code> または <code>硫酸ナトリウム</code>）。
+    </p>
+
+    <div class="stage-main">
+      <div class="stage-left">
+        <div class="combine-table" id="combine-table"></div>
+        <div class="combine-progress" id="combine-progress">残り <span class="filled" id="ct-remaining">13</span> 問</div>
+        <div class="feedback" id="stA-feedback"></div>
+      </div>
+      <div class="control-col">
+        <span class="ctrl-label">━ 操作 ━</span>
+        <button class="btn primary" id="stA-check-btn">✅ 答え合わせ</button>
+        <button class="btn ghost" id="stA-show-btn">👀 答えを見る</button>
+        <button class="btn ghost" id="stA-reset-btn">↻ リセット</button>
+        <div style="flex:1;"></div>
+        <span class="ctrl-label">━ 移動 ━</span>
+        <button class="btn" disabled>← 戻る</button>
+        <button class="btn primary" data-goto="0">デモへ →</button>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== STAGE 0: デモ（クリック進行） ===== -->
-  <section class="chapter active" id="ch-0">
+  <section class="chapter" id="ch-0">
     <div class="overlay-explainer" id="overlay-explainer">
       <button class="close-btn" id="overlay-close">×</button>
       <h3>📘 中和の本質</h3>
@@ -981,6 +1065,7 @@ function goto(n) {
   const dot = document.querySelector('.pdot[data-stage="' + n + '"]');
   if (dot) dot.classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (n === 'A') initStageA();
   if (n === 0) initStage0();
   if (n === 1) initStage1();
   if (n === 2) initStage2();
@@ -1056,6 +1141,128 @@ function flashAt(el) {
 // ============================================================
 // STAGE 0: デモ（クリック進行式）
 // ============================================================
+// ============================================================
+// STAGE A: イオン組み合わせ → 化合物
+// ============================================================
+const STAGE_A_QS = [
+  { anion:'硫酸イオン', cation:'ナトリウムイオン', formulas:['Na2SO4','Na₂SO₄'], names:['硫酸ナトリウム'] },
+  { anion:'硫酸イオン', cation:'カルシウムイオン', formulas:['CaSO4','CaSO₄'], names:['硫酸カルシウム'] },
+  { anion:'硫酸イオン', cation:'銅イオン',       formulas:['CuSO4','CuSO₄'], names:['硫酸銅'] },
+  { anion:'硫酸イオン', cation:'水素イオン',     formulas:['H2SO4','H₂SO₄'], names:['硫酸'] },
+  { anion:'硫酸イオン', cation:'亜鉛イオン',     formulas:['ZnSO4','ZnSO₄'], names:['硫酸亜鉛'] },
+  { anion:'硫酸イオン', cation:'マグネシウムイオン', formulas:['MgSO4','MgSO₄'], names:['硫酸マグネシウム'] },
+  { anion:'硫酸イオン', cation:'バリウムイオン', formulas:['BaSO4','BaSO₄'], names:['硫酸バリウム'] },
+  { anion:'水酸化物イオン', cation:'ナトリウムイオン', formulas:['NaOH'], names:['水酸化ナトリウム'] },
+  { anion:'水酸化物イオン', cation:'カルシウムイオン', formulas:['Ca(OH)2','Ca(OH)₂'], names:['水酸化カルシウム'] },
+  { anion:'水酸化物イオン', cation:'バリウムイオン', formulas:['Ba(OH)2','Ba(OH)₂'], names:['水酸化バリウム'] },
+  { anion:'炭酸イオン', cation:'ナトリウムイオン', formulas:['Na2CO3','Na₂CO₃'], names:['炭酸ナトリウム'] },
+  { anion:'炭酸イオン', cation:'マグネシウムイオン', formulas:['MgCO3','MgCO₃'], names:['炭酸マグネシウム'] },
+  { anion:'炭酸イオン', cation:'バリウムイオン', formulas:['BaCO3','BaCO₃'], names:['炭酸バリウム'] },
+  { anion:'炭酸イオン', cation:'水素イオン',     formulas:['H2CO3','H₂CO₃'], names:['炭酸'] },
+];
+
+// 化学式 / 名前 を正規化（添字統一・空白除去）
+function normalizeAns(s) {
+  return s
+    .replace(/[₀-₉]/g, ch => String.fromCharCode(48 + ch.charCodeAt(0) - 0x2080))
+    .replace(/\s+/g, '')
+    .replace(/[（]/g, '(').replace(/[）]/g, ')')
+    .trim();
+}
+function isStageAAnswer(userInput, q) {
+  if (!userInput) return false;
+  const u = normalizeAns(userInput);
+  const candidates = [...q.formulas, ...q.names].map(normalizeAns);
+  return candidates.includes(u);
+}
+
+function initStageA() {
+  const tbl = document.getElementById('combine-table');
+  tbl.innerHTML = '';
+  // ヘッダ行
+  tbl.appendChild(makeHeadDiv('陰イオン'));
+  tbl.appendChild(makeHeadDiv('陽イオン'));
+  tbl.appendChild(makeHeadDiv(''));
+  tbl.appendChild(makeHeadDiv('化合物（化学式 or 名前）'));
+  tbl.appendChild(makeHeadDiv('判定'));
+  // データ行
+  STAGE_A_QS.forEach((q, i) => {
+    const a = document.createElement('div'); a.className = 'ct-ion ct-anion'; a.textContent = q.anion;
+    const c = document.createElement('div'); c.className = 'ct-ion ct-cation'; c.textContent = q.cation;
+    const arrow = document.createElement('div'); arrow.className = 'ct-arrow'; arrow.textContent = '→';
+    const inp = document.createElement('input');
+    inp.type = 'text';
+    inp.className = 'ct-answer';
+    inp.dataset.idx = i;
+    inp.placeholder = '化学式 or 名前';
+    inp.addEventListener('input', updateStageARemaining);
+    const mark = document.createElement('div'); mark.className = 'ct-mark'; mark.dataset.idx = i;
+    tbl.appendChild(a); tbl.appendChild(c); tbl.appendChild(arrow); tbl.appendChild(inp); tbl.appendChild(mark);
+  });
+  updateStageARemaining();
+  document.getElementById('stA-feedback').className = 'feedback';
+}
+function makeHeadDiv(text) {
+  const d = document.createElement('div');
+  d.className = 'ct-head';
+  d.textContent = text;
+  return d;
+}
+function updateStageARemaining() {
+  const inputs = document.querySelectorAll('#combine-table input.ct-answer');
+  const filled = [...inputs].filter(i => i.value.trim().length > 0).length;
+  const remaining = STAGE_A_QS.length - filled;
+  const el = document.getElementById('ct-remaining');
+  if (el) el.textContent = remaining;
+}
+
+document.addEventListener('click', e => {
+  if (e.target.id === 'stA-check-btn') {
+    const inputs = document.querySelectorAll('#combine-table input.ct-answer');
+    let correct = 0;
+    inputs.forEach(inp => {
+      const i = parseInt(inp.dataset.idx);
+      const q = STAGE_A_QS[i];
+      const mark = document.querySelector('#combine-table .ct-mark[data-idx="' + i + '"]');
+      if (isStageAAnswer(inp.value, q)) {
+        inp.classList.remove('ng'); inp.classList.add('ok');
+        mark.className = 'ct-mark ok'; mark.textContent = '◯';
+        correct++;
+      } else if (inp.value.trim().length > 0) {
+        inp.classList.remove('ok'); inp.classList.add('ng');
+        mark.className = 'ct-mark ng'; mark.textContent = '✗';
+      } else {
+        inp.classList.remove('ok','ng');
+        mark.className = 'ct-mark'; mark.textContent = '';
+      }
+    });
+    const fb = document.getElementById('stA-feedback');
+    if (correct === STAGE_A_QS.length) {
+      fb.className = 'feedback show ok';
+      fb.innerHTML = '<strong>🎉 全問正解！</strong>イオンの組み合わせで化合物が作れる感覚、つかめたね。次は STAGE 0 のデモへ。';
+    } else {
+      fb.className = 'feedback show ng';
+      fb.innerHTML = '<strong>正解 ' + correct + ' / ' + STAGE_A_QS.length + '</strong>✗ の問題をもう一度考えてみよう。化学式（例 Na₂SO₄ / Na2SO4）でも、名前（例 硫酸ナトリウム）でもOK。';
+    }
+    SFX[correct === STAGE_A_QS.length ? 'fanfare' : 'wrong']?.();
+  } else if (e.target.id === 'stA-show-btn') {
+    // 答えを見る（全問正解を埋める）
+    const inputs = document.querySelectorAll('#combine-table input.ct-answer');
+    inputs.forEach(inp => {
+      const i = parseInt(inp.dataset.idx);
+      const q = STAGE_A_QS[i];
+      inp.value = q.names[0];   // 日本語名で埋める
+      inp.classList.remove('ng'); inp.classList.add('ok');
+      const mark = document.querySelector('#combine-table .ct-mark[data-idx="' + i + '"]');
+      if (mark) { mark.className = 'ct-mark ok'; mark.textContent = '◯'; }
+    });
+    updateStageARemaining();
+  } else if (e.target.id === 'stA-reset-btn') {
+    initStageA();
+  }
+});
+
+
 let stage0 = { step: 0, acidKey: 'HCl', alkaliKey: 'NaOH', rx: null, centerIons: [] };
 
 function initStage0() {
@@ -1802,6 +2009,7 @@ document.getElementById('overlay-close').addEventListener('click', () => {
 // 初期化
 updateRankBadge();
 updateProgressNav();
+initStageA();
 initStage0();
 </script>
 </body>
