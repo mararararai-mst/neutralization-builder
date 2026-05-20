@@ -1959,9 +1959,14 @@ const ION_PLAIN = {
   'NO3-':'NO₃⁻', 'SO42-':'SO₄²⁻',
 };
 function compoundIonsPlain(key) {
+  // 個数分のイオンを並べて表示（例：H₂SO₄ → H⁺ + H⁺ + SO₄²⁻、Ca(OH)₂ → Ca²⁺ + OH⁻ + OH⁻）
   const c = COMPOUNDS[key];
   if (!c || !c.ions) return '';
-  return c.ions.map(i => `${i.n>1?i.n:''}${ION_PLAIN[i.type]||i.type}`).join(' + ');
+  const parts = [];
+  c.ions.forEach(i => {
+    for (let k = 0; k < i.n; k++) parts.push(ION_PLAIN[i.type] || i.type);
+  });
+  return parts.join(' + ');
 }
 function compoundDisplayHTML(key) {
   return `<span class="compound-with-hint" data-compound="${key}">
