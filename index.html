@@ -549,21 +549,25 @@ header.title .rank-badge {
 
 /* ===== 化合物タイル + イオンヒント（STAGE 2/3 で使用） ===== */
 .compound-with-hint {
+  position: relative;
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
   vertical-align: middle;
-  gap: 2px;
 }
 .compound-with-hint .compound-tile-display {
-  padding: 3px 10px;
+  padding: 4px 12px;
   background: #FFF6E6;
   border: 2px solid #BFAE85;
   border-radius: 8px;
   font-family: 'Kaisei Decol', serif;
 }
 .compound-with-hint .ions-hint {
-  font-size: 11px;
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 3px;
+  font-size: 11.5px;
   color: var(--accent2);
   font-family: 'Kaisei Decol', serif;
   font-weight: 700;
@@ -984,8 +988,8 @@ sub, sup { font-size: 0.72em; }
     <div class="blank-row" id="st2-formula"></div>
 
     <div class="box" style="text-align:center; padding:6px;">
-      <button class="btn primary" id="st2-check">✅ 答え合わせ</button>
       <button class="btn ghost sm" id="st2-hint">💡 ヒント：イオンに分けて見る</button>
+      <button class="btn primary" id="st2-check">✅ 答え合わせ</button>
       <button class="btn ghost sm" id="st2-next-q">次の問題 →</button>
     </div>
 
