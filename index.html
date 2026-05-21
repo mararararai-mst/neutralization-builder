@@ -547,6 +547,137 @@ header.title .rank-badge {
 @keyframes pop-in { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes flash-anim { 0%{transform:scale(0.5);opacity:0;}30%{transform:scale(1.2);opacity:1;}100%{transform:scale(2.0);opacity:0;} }
 
+/* ===== ホーム画面 ===== */
+.home-hero {
+  text-align: center;
+  background: linear-gradient(135deg, #FFF6E6 0%, #FFEFE0 100%);
+  border: 2px solid var(--accent);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 10px;
+}
+.home-hero .home-goal-emoji { font-size: 32px; line-height: 1; }
+.home-hero .home-goal-label {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #8C5A1A;
+  font-weight: 700;
+  margin-top: 4px;
+}
+.home-hero .home-goal-text {
+  font-size: 19px;
+  font-weight: 800;
+  color: #8C4A28;
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+.home-hero .home-rank-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  background: #fff;
+  border: 1.5px solid #BFAE85;
+  border-radius: 999px;
+  padding: 4px 14px 4px 6px;
+}
+.home-hero .home-rank-row .rank-emoji { font-size: 20px; line-height: 1; }
+.home-hero .home-rank-row .rank-text { font-size: 13px; font-weight: 800; color: #6a5a40; }
+.home-hero .home-rank-row .rank-progress { font-size: 11px; color: #8a7a60; }
+
+.home-explainer {
+  background: #FFFBF0;
+  border-left: 4px solid var(--accent2);
+  border-radius: 0 8px 8px 0;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 12.5px;
+}
+.home-explainer summary { cursor: pointer; font-weight: 700; color: var(--accent2); }
+.home-explainer p { margin: 6px 0 0; color: #5a4a30; line-height: 1.7; }
+.home-explainer .panel-rx {
+  background: #fff;
+  border: 1.5px solid var(--accent2);
+  border-radius: 6px;
+  padding: 4px 8px;
+  margin: 6px 0;
+  font-family: 'Kaisei Decol', serif;
+  font-size: 14px;
+  text-align: center;
+}
+
+.home-section-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #6a4a20;
+  margin: 14px 0 6px;
+  padding-left: 4px;
+  border-left: 4px solid var(--accent);
+}
+.home-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+}
+.home-card {
+  background: #fff;
+  border: 2px solid #BFAE85;
+  border-radius: 12px;
+  padding: 12px 12px 14px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.10s, box-shadow 0.10s;
+  text-align: left;
+  font-family: inherit;
+}
+.home-card:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(120,100,80,0.18); }
+.home-card .hc-stage {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 11px;
+  font-weight: 800;
+  color: #fff;
+  background: var(--accent);
+  padding: 2px 9px;
+  border-radius: 999px;
+}
+.home-card .hc-icon { font-size: 28px; line-height: 1; }
+.home-card .hc-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #4a3a20;
+  margin-top: 6px;
+}
+.home-card .hc-desc {
+  font-size: 12px;
+  color: #6a5a40;
+  line-height: 1.55;
+  margin-top: 4px;
+}
+.home-card .hc-cleared {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: #5AA070;
+  padding: 1px 8px;
+  border-radius: 999px;
+}
+.home-card.cleared { border-color: #5AA070; background: #F1F9F2; }
+
+/* カラーバリエーション */
+.home-card.stage-A { border-left: 6px solid #B07A20; }
+.home-card.stage-A .hc-stage { background: #B07A20; }
+.home-card.stage-0 { border-left: 6px solid var(--accent2); }
+.home-card.stage-0 .hc-stage { background: var(--accent2); }
+.home-card.stage-1 { border-left: 6px solid #2E7D32; }
+.home-card.stage-1 .hc-stage { background: #2E7D32; }
+.home-card.stage-2 { border-left: 6px solid var(--accent); }
+.home-card.stage-3 { border-left: 6px solid #B71C1C; }
+.home-card.stage-3 .hc-stage { background: #B71C1C; }
+
 /* ===== 化合物タイル + イオンヒント（STAGE 2/3 で使用） ===== */
 .compound-with-hint {
   position: relative;
@@ -828,15 +959,40 @@ sub, sup { font-size: 0.72em; }
   </div>
 
   <div class="progress-nav" id="progress-nav">
-    <button class="pdot active" data-stage="A"><span class="stnum">A</span>イオン組合せ</button>
+    <button class="pdot active" data-stage="home"><span class="stnum">🏠</span>ホーム</button>
+    <button class="pdot" data-stage="A"><span class="stnum">A</span>イオン組合せ</button>
     <button class="pdot" data-stage="0"><span class="stnum">0</span>デモ</button>
     <button class="pdot" data-stage="1"><span class="stnum">1</span>自分で組み立て</button>
     <button class="pdot" data-stage="2"><span class="stnum">2</span>空欄埋め</button>
     <button class="pdot" data-stage="3"><span class="stnum">3</span>確認テスト</button>
   </div>
 
+  <!-- ===== ホーム ===== -->
+  <section class="chapter active" id="ch-home">
+    <div class="home-hero">
+      <div class="home-goal-emoji">🎯</div>
+      <div class="home-goal-label">めあて</div>
+      <div class="home-goal-text">中和反応式を、自分の力で書けるようになる</div>
+      <div class="home-rank-row">
+        <span class="rank-emoji">🌱</span>
+        <span class="rank-text" id="home-rank-name">みならい</span>
+        <span class="rank-progress"><span id="home-cleared-count">0</span> / 5 ステージクリア</span>
+      </div>
+    </div>
+
+    <details class="home-explainer">
+      <summary>📘 中和反応式って？</summary>
+      <p>酸の <strong>H⁺</strong> とアルカリの <strong>OH⁻</strong> が出会うと、水（H₂O）になる。これが中和。残ったイオンが組み合わさって <strong>塩</strong> ができる。</p>
+      <div class="panel-rx">酸 + アルカリ → 塩 + 水</div>
+      <p>このアプリでは、3酸×3アルカリ＝<strong>9パターン</strong>の中和反応式を、5つのステージで体験しながら書けるようになる。</p>
+    </details>
+
+    <div class="home-section-title">どこから始める？</div>
+    <div class="home-cards" id="home-cards"></div>
+  </section>
+
   <!-- ===== STAGE A: イオンの組み合わせから化合物 ===== -->
-  <section class="chapter active" id="ch-A">
+  <section class="chapter" id="ch-A">
     <h2>🧪 STAGE A: イオンを組み合わせて化合物を作る</h2>
     <p class="lead">
       左の <b>化合物名</b> を見て、<b>陰イオン式 × 個数</b> と <b>陽イオン式 × 個数</b> を選んで <b>🔗 結合</b> を押そう。<br>
@@ -856,7 +1012,7 @@ sub, sup { font-size: 0.72em; }
         <button class="btn ghost" id="stA-reset-btn">↻ このステージをもう一度</button>
         <div style="flex:1;"></div>
         <span class="ctrl-label">━ 移動 ━</span>
-        <button class="btn" disabled>← 戻る</button>
+        <button class="btn" data-goto="home">🏠 ホーム</button>
         <button class="btn primary" data-goto="0">デモへ →</button>
       </div>
     </div>
@@ -932,7 +1088,7 @@ sub, sup { font-size: 0.72em; }
         <button class="btn ghost" id="demo-reset">↻ このステージをもう一度</button>
         <div style="flex:1;"></div>
         <span class="ctrl-label">━ 移動 ━</span>
-        <button class="btn" disabled>← 戻る</button>
+        <button class="btn" data-goto="home">🏠 ホーム</button>
         <button class="btn primary" data-goto="1">組み立てる →</button>
       </div>
     </div>
@@ -1001,13 +1157,13 @@ sub, sup { font-size: 0.72em; }
     <div class="feedback" id="st2-feedback"></div>
 
     <div class="chapter-nav">
-      <button class="btn" data-goto="1">← 戻る</button>
+      <button class="btn" data-goto="home">🏠 ホーム</button>
       <span class="btn sm" style="cursor:default;box-shadow:none;" id="st2-q-counter">問題 1 / 5</span>
       <button class="btn primary" data-goto="3">次へ：確認テスト →</button>
     </div>
   </section>
 
-  <!-- ===== STAGE 3: ファイナル ===== -->
+  <!-- ===== STAGE 3: 確認テスト ===== -->
   <section class="chapter" id="ch-3">
     <h2>🏆 STAGE 3: 確認テスト</h2>
     <p class="lead">
@@ -1026,7 +1182,7 @@ sub, sup { font-size: 0.72em; }
     <div class="feedback" id="st3-feedback"></div>
 
     <div class="chapter-nav">
-      <button class="btn" data-goto="2">← 戻る</button>
+      <button class="btn" data-goto="home">🏠 ホーム</button>
       <span class="btn sm" style="cursor:default;box-shadow:none;" id="st3-q-counter">1 / 5</span>
       <button class="btn ghost" id="st3-restart" style="display:none;">↻ 最初から</button>
     </div>
@@ -1197,11 +1353,47 @@ function goto(n) {
   const dot = document.querySelector('.pdot[data-stage="' + n + '"]');
   if (dot) dot.classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (n === 'home') initHome();
   if (n === 'A') initStageA();
   if (n === 0) initStage0();
   if (n === 1) initStage1();
   if (n === 2) initStage2();
   if (n === 3) initStage3();
+}
+
+// ============================================================
+// ホーム画面
+// ============================================================
+const HOME_CARDS = [
+  { stage:'A', icon:'🧪',   title:'STAGE A：イオン組合せ', desc:'化合物名から構成イオンと個数を選んで、化学式を組み立てる練習（14問）' },
+  { stage:0,   icon:'🎬',   title:'STAGE 0：デモを見る', desc:'9パターンの中和を観察。電離→中和→塩 の流れを自分のペースで見る' },
+  { stage:1,   icon:'🤝',   title:'STAGE 1：自分で組み立てる', desc:'H⁺とOH⁻をクリックでペア化して水・塩を作る。9パターンから選択' },
+  { stage:2,   icon:'📝',   title:'STAGE 2：空欄埋め', desc:'係数も含めて反応式を完成させる。ヒント機能でイオン分解を見られる' },
+  { stage:3,   icon:'🏆',   title:'STAGE 3：確認テスト', desc:'ランダム5問で総合確認。係数と塩を全部自分で選んで完成式を作る' },
+];
+function initHome() {
+  const root = document.getElementById('home-cards');
+  if (!root) return;
+  root.innerHTML = '';
+  let clearedCount = 0;
+  HOME_CARDS.forEach(c => {
+    const cleared = !!STATE.cleared[c.stage];
+    if (cleared) clearedCount++;
+    const btn = document.createElement('button');
+    btn.className = 'home-card stage-' + c.stage + (cleared ? ' cleared' : '');
+    btn.innerHTML =
+      `<span class="hc-stage">${c.stage}</span>` +
+      `<div class="hc-icon">${c.icon}</div>` +
+      `<div class="hc-title">${c.title}</div>` +
+      `<div class="hc-desc">${c.desc}</div>` +
+      (cleared ? '<span class="hc-cleared">✓ クリア済み</span>' : '');
+    btn.addEventListener('click', () => goto(c.stage));
+    root.appendChild(btn);
+  });
+  const el = document.getElementById('home-cleared-count');
+  if (el) el.textContent = clearedCount;
+  const rankEl = document.getElementById('home-rank-name');
+  if (rankEl) rankEl.textContent = RANKS[Math.min(STATE.rank, RANKS.length - 1)].replace(/^[^ ]+ /, '');
 }
 
 // ============================================================
@@ -2198,6 +2390,7 @@ document.getElementById('overlay-close').addEventListener('click', () => {
 // 初期化
 updateRankBadge();
 updateProgressNav();
+initHome();
 initStageA();
 initStage0();
 </script>
